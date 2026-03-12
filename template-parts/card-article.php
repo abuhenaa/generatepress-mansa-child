@@ -18,8 +18,6 @@ $topic_label = $topics && ! is_wp_error( $topics ) ? $topics[0]->name : '';
 		<?php
 		if ( has_post_thumbnail() ) {
 			the_post_thumbnail( 'medium', array( 'loading' => 'lazy', 'alt' => esc_attr( get_the_title() ) ) );
-		} else {
-			?><img src="https://via.placeholder.com/640x360?text=Article" alt="<?php echo esc_attr( get_the_title() ); ?>" loading="lazy" /><?php
 		}
 		?>
 	</a>

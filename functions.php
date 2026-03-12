@@ -31,6 +31,16 @@ function gp_mansa_child_enqueue_assets() {
 			true
 		);
 	}
+
+	if ( is_singular( 'mansa_brand' ) ) {
+		wp_enqueue_script(
+			'generatepress-mansa-child-carousel',
+			get_stylesheet_directory_uri() . '/assets/js/carousel.js',
+			array(),
+			wp_get_theme()->get( 'Version' ),
+			true
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'gp_mansa_child_enqueue_assets' );
 

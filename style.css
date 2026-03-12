@@ -421,6 +421,7 @@ img {
 	grid-template-columns: 1fr 1fr;
 	gap: 2.5rem;
 	align-items: start;
+	padding-bottom: 3rem;
 }
 
 .mansa-product-gallery {
@@ -701,5 +702,220 @@ img {
 @media (max-width: 640px) {
 	.mansa-related-grid {
 		grid-template-columns: 1fr;
+	}
+}
+
+/* Brand page styles */
+.mansa-brand-page {
+	max-width: 1000px;
+	margin: 0 auto;
+	padding: var(--space);
+}
+
+.mansa-brand-hero {
+	margin-bottom: 3rem;
+}
+
+.mansa-brand-header {
+	margin-bottom: 2rem;
+}
+
+.mansa-brand-image {
+	width: 100%;
+	overflow: hidden;
+	border-radius: var(--radius);
+}
+
+.mansa-brand-image img {
+	height: auto;
+	display: block;
+}
+
+.mansa-brand-header__info {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.mansa-brand-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 15px;
+	line-height: 1.2;
+}
+
+.mansa-brand-subtitle {
+	font-size: 1.1rem;
+	color: var(--muted);
+	margin: 0;
+}
+
+.mansa-brand-contact {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.mansa-brand-section {
+	margin-bottom: 3rem;
+}
+
+.mansa-brand-story {
+	font-size: 1.0rem;
+	line-height: 1.8;
+}
+
+.mansa-brand-description {
+	font-size: 1.0rem;
+	line-height: 1.8;
+}
+
+.mansa-brand-socials {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 2rem;
+}
+
+.mansa-brand-social__item {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.mansa-brand-social__item strong {
+	font-weight: 600;
+	color: var(--text);
+}
+
+.mansa-brand-social-links {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.mansa-brand-social-links a {
+	color: var(--accent);
+	text-decoration: none;
+	transition: color 0.2s;
+}
+
+.mansa-brand-social-links a:hover {
+	color: var(--accent-2);
+}
+
+.mansa-brand-empty {
+	color: var(--muted);
+	font-style: italic;
+	padding: 2rem;
+	text-align: center;
+	background: rgba(107, 114, 128, 0.05);
+	border-radius: var(--radius-sm);
+}
+
+/* Carousel styles */
+.carousel {
+	position: relative;
+	margin-bottom: 2rem;
+}
+
+.carousel__track {
+	overflow: hidden;
+	border-radius: var(--radius);
+	transition: transform 0.3s ease-in-out;
+}
+
+.carousel .card {
+	flex: 0 0 calc(25% - 18px);
+	min-width: 200px;
+}
+
+.carousel__button {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 48px;
+	height: 48px;
+	background: rgba(255, 255, 255, 0.9);
+	border: 1px solid var(--border);
+	border-radius: 50%;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.5rem;
+	color: var(--text);
+	transition: all 0.2s;
+	z-index: 10;
+	box-shadow: var(--shadow);
+}
+
+.carousel__button:hover:not(:disabled) {
+	background: var(--primary);
+	color: white;
+	transform: translateY(-50%) scale(1.1);
+}
+
+.carousel__button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.carousel__button--prev {
+	left: -24px;
+}
+
+.carousel__button--next {
+	right: -24px;
+}
+
+.mansa-products-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 2rem;
+}
+
+@media (max-width: 960px) {
+	.mansa-brand-header {
+		grid-template-columns: 1fr;
+	}
+
+	.carousel .card {
+		flex: 0 0 calc(33.333% - 16px);
+	}
+}
+
+@media (max-width: 640px) {
+	.mansa-brand-title {
+		font-size: 1.75rem;
+	}
+
+	.mansa-brand-header {
+		gap: 1rem;
+	}
+
+	.carousel .card {
+		flex: 0 0 calc(50% - 12px);
+	}
+
+	.carousel__button--prev {
+		left: -20px;
+	}
+
+	.carousel__button--next {
+		right: -20px;
+	}
+
+	.carousel__button {
+		width: 40px;
+		height: 40px;
+		font-size: 1.2rem;
+	}
+
+	.mansa-products-grid {
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+		gap: 1rem;
 	}
 }

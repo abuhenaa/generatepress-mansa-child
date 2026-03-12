@@ -42,8 +42,8 @@ while ( have_posts() ) :
 			<div class="card__excerpt"><?php the_content(); ?></div>
 		</section>
 
-		<section>
-			<h2><?php esc_html_e( 'Related Products', 'generatepress-mansa-child' ); ?></h2>
+		<section aria-labelledby="mansa-article-related-products">
+			<h2 id="mansa-article-related-products"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_article_related_products_title', __( 'Related Products', 'generatepress-mansa-child' ) ) ); ?></h2>
 			<?php if ( ! empty( $related_products ) ) : ?>
 				<?php
 				$products_query = new WP_Query(
@@ -72,8 +72,8 @@ while ( have_posts() ) :
 			<?php endif; ?>
 		</section>
 
-		<section>
-			<h2><?php esc_html_e( 'Related Brands', 'generatepress-mansa-child' ); ?></h2>
+		<section aria-labelledby="mansa-article-related-brands">
+			<h2 id="mansa-article-related-brands"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_article_related_brands_title', __( 'Related Brands', 'generatepress-mansa-child' ) ) ); ?></h2>
 			<?php if ( ! empty( $related_brands ) ) : ?>
 				<?php
 				$brands_query = new WP_Query(

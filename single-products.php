@@ -127,7 +127,7 @@ while ( have_posts() ) :
 		</section>
 
 		<section class="mansa-product-section" aria-labelledby="mansa-product-overview">
-			<h2 id="mansa-product-overview" class="section__title"><?php esc_html_e( 'Product Overview', 'generatepress-mansa-child' ); ?></h2>
+			<h2 id="mansa-product-overview" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_product_overview_title', __( 'Product Overview', 'generatepress-mansa-child' ) ) ); ?></h2>
 			<div class="mansa-product-overview">
 				<?php if ( $origin_label ) : ?>
 					<div class="mansa-product-overview__item">
@@ -163,12 +163,12 @@ while ( have_posts() ) :
 		</section>
 
 		<section class="mansa-product-section" aria-labelledby="mansa-product-about">
-			<h2 id="mansa-product-about" class="section__title"><?php esc_html_e( 'About this product', 'generatepress-mansa-child' ); ?></h2>
+			<h2 id="mansa-product-about" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_product_about_title', __( 'About this product', 'generatepress-mansa-child' ) ) ); ?></h2>
 			<div class="mansa-product-longdesc"><?php the_content(); ?></div>
 		</section>
 
 		<section class="mansa-product-section" aria-labelledby="mansa-product-benefits">
-			<h2 id="mansa-product-benefits" class="section__title"><?php esc_html_e( 'Why people buy this', 'generatepress-mansa-child' ); ?></h2>
+			<h2 id="mansa-product-benefits" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_product_benefits_title', __( 'Why people buy this', 'generatepress-mansa-child' ) ) ); ?></h2>
 			<?php if ( ! empty( $benefits ) ) : ?>
 				<ul class="mansa-product-benefits">
 					<?php foreach ( $benefits as $benefit ) : ?>
@@ -184,7 +184,7 @@ while ( have_posts() ) :
 		</section>
 
 		<section class="mansa-product-section" aria-labelledby="mansa-product-where-to-buy">
-			<h2 id="mansa-product-where-to-buy" class="section__title"><?php esc_html_e( 'Where to Buy', 'generatepress-mansa-child' ); ?></h2>
+			<h2 id="mansa-product-where-to-buy" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_product_where_to_buy_title', __( 'Where to Buy', 'generatepress-mansa-child' ) ) ); ?></h2>
 			<?php if ( ! empty( $buy_links ) ) : ?>
 				<div class="mansa-product-buy">
 					<?php foreach ( $buy_links as $link ) : ?>
@@ -203,7 +203,7 @@ while ( have_posts() ) :
 		</section>
 
 		<section class="mansa-product-section" aria-labelledby="mansa-product-supplier">
-			<h2 id="mansa-product-supplier" class="section__title"><?php esc_html_e( 'Supplier', 'generatepress-mansa-child' ); ?></h2>
+			<h2 id="mansa-product-supplier" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_product_supplier_title', __( 'Supplier', 'generatepress-mansa-child' ) ) ); ?></h2>
 			<div class="mansa-supplier">
 				<div class="mansa-supplier__logo"></div>
 				<div class="mansa-supplier__info">
@@ -217,7 +217,7 @@ while ( have_posts() ) :
 		</section>
 
 		<section class="mansa-product-section" aria-labelledby="mansa-product-similar">
-			<h2 id="mansa-product-similar" class="section__title"><?php esc_html_e( 'Similar Products', 'generatepress-mansa-child' ); ?></h2>
+			<h2 id="mansa-product-similar" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_product_similar_title', __( 'Similar Products', 'generatepress-mansa-child' ) ) ); ?></h2>
 			<?php
 			$similar_args = array(
 				'post_type'      => 'mansa_product',
@@ -251,7 +251,7 @@ while ( have_posts() ) :
 			<?php endif; ?>
 		</section>
 		<section class="mansa-product-section" aria-labelledby="mansa-product-related-articles">
-			<h2 id="mansa-product-related-articles" class="section__title"><?php esc_html_e( 'Related Articles', 'generatepress-mansa-child' ); ?></h2>
+			<h2 id="mansa-product-related-articles" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_product_related_articles_title', __( 'Related Articles', 'generatepress-mansa-child' ) ) ); ?></h2>
 			<?php
 			$related_posts = array();
 			if ( class_exists( 'Mansa\\Relationships\\ArticleRelations' ) ) {

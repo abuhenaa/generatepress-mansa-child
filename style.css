@@ -10,19 +10,6 @@ Text Domain: generatepress-mansa-child
 */
 
 /* Basic reset and typography */
-:root {
-	--bg: #ffffff;
-	--text: #111827;
-	--muted: #6b7280;
-	--border: rgba(145, 158, 171, 0.3);
-	--primary: #1f2937;
-	--accent: #2563eb;
-	--accent-2: #059669;
-	--shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-	--radius: 14px;
-	--radius-sm: 10px;
-	--space: 1.5rem;
-}
 
 html {
 	box-sizing: border-box;
@@ -34,35 +21,15 @@ html {
 	box-sizing: inherit;
 }
 
-body {
-	background: var(--bg);
-	color: var(--text);
-	font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	line-height: 1.6;
-	margin: 0;
-}
-
-a {
-	color: var(--accent);
-	text-decoration: none;
-}
-
-a:hover {
-	text-decoration: underline;
-}
-
-img {
-	max-width: 100%;
-	height: auto;
-}
-
 /* Layout helpers */
 .site-content {
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 2.5rem 1.25rem;
 }
-
+section {
+    padding: 3rem 0;
+}
 @media (min-width: 1024px) {
 	.site-content {
 		padding: 3rem 2rem;
@@ -917,5 +884,92 @@ img {
 	.mansa-products-grid {
 		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 		gap: 1rem;
+	}
+}
+
+/* Article single page */
+.mansa-article-page {
+	max-width: 800px;
+	margin: 0 auto;
+	padding: var(--space);
+}
+
+.mansa-article-hero {
+	margin-bottom: 1.5rem;
+}
+
+.mansa-article-topics {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 0 0 0.75rem;
+}
+
+.mansa-article-topic {
+	font-size: 0.85rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--muted);
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.mansa-article-topic:hover {
+	color: var(--accent);
+}
+
+.mansa-article-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	line-height: 1.2;
+	margin: 0;
+}
+
+.mansa-article-image {
+	margin: 0 0 2rem;
+	overflow: hidden;
+	border-radius: var(--radius);
+}
+
+.mansa-article-image img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.mansa-article-section {
+	margin-bottom: 3rem;
+}
+
+.mansa-article-content {
+	font-size: 1.05rem;
+	line-height: 1.8;
+	color: var(--text);
+}
+
+.mansa-article-content > *:first-child {
+	margin-top: 0;
+}
+
+.mansa-article-content img,
+.mansa-article-content figure,
+.mansa-article-content video,
+.mansa-article-content iframe {
+	max-width: 100%;
+	height: auto;
+}
+
+.mansa-article-empty {
+	color: var(--muted);
+	font-style: italic;
+	padding: 2rem;
+	text-align: center;
+	background: rgba(107, 114, 128, 0.05);
+	border-radius: var(--radius-sm);
+}
+
+@media (max-width: 640px) {
+	.mansa-article-title {
+		font-size: 1.75rem;
 	}
 }

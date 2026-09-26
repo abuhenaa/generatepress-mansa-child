@@ -11,39 +11,69 @@ while ( have_posts() ) :
 	the_post();
 
 	$article_id = get_the_ID();
-	$topics = get_the_terms( $article_id, 'mansa_article_topic' );
-	$topic_label = $topics && ! is_wp_error( $topics ) ? $topics[0]->name : '';
+	$topics     = get_the_terms( $article_id, 'mansa_article_topic' );
+	$topics     = ( $topics && ! is_wp_error( $topics ) ) ? $topics : array();
 
 	$related_products = array();
-	$related_brands = array();
+	$related_brands   = array();
 
 	if ( class_exists( 'Mansa\\Relationships\\ArticleRelations' ) ) {
-		$relations = new Mansa\Relationships\ArticleRelations();
-		$related_products = $relations->get_related_products( $article_id );
-		$related_brands   = $relations->get_related_brands( $article_id );
+		$relations        = new Mansa\Relationships\ArticleRelations();
+		$related_products = array_filter( $relations->get_related_products( $article_id ) );
+		$related_brands   = array_filter( $relations->get_related_brands( $article_id ) );
+	}
+
+	$products_title = __( 'Related Products', 'generatepress-mansa-child' );
+	$brands_title   = __( 'Related Brands', 'generatepress-mansa-child' );
+	if ( class_exists( 'Mansa\\Admin\\Settings' ) ) {
+		$products_title = \Mansa\Admin\Settings::get_setting( 'mansa_article_related_products_title', $products_title );
+		$brands_title   = \Mansa\Admin\Settings::get_setting( 'mansa_article_related_brands_title', $brands_title );
 	}
 	?>
-	<main>
-		<section class="archive-header">
-			<h1><?php the_title(); ?></h1>
-			<?php if ( $topic_label ) : ?>
-				<p class="card__meta"><?php echo esc_html( $topic_label ); ?></p>
+	<main class="mansa-article-page">
+		<article <?php post_class( 'mansa-article' ); ?>>
+			<header class="mansa-article-hero">
+				<?php if ( ! empty( $topics ) ) : ?>
+					<p class="mansa-article-topics">
+						<?php foreach ( $topics as $topic ) : ?>
+							<?php $topic_link = get_term_link( $topic ); ?>
+							<?php if ( ! is_wp_error( $topic_link ) ) : ?>
+								<a class="mansa-article-topic" href="<?php echo esc_url( $topic_link ); ?>"><?php echo esc_html( $topic->name ); ?></a>
+							<?php else : ?>
+								<span class="mansa-article-topic"><?php echo esc_html( $topic->name ); ?></span>
+							<?php endif; ?>
+						<?php endforeach; ?>
+					</p>
+				<?php endif; ?>
+
+				<h1 class="mansa-article-title"><?php the_title(); ?></h1>
+			</header>
+
+			<?php if ( has_post_thumbnail() ) : ?>
+				<figure class="mansa-article-image">
+					<?php
+					the_post_thumbnail(
+						'large',
+						array(
+							'loading'     => 'eager',
+							'fetchpriority' => 'high',
+							'alt'         => esc_attr( get_the_title() ),
+						)
+					);
+					?>
+				</figure>
 			<?php endif; ?>
-			<p class="card__excerpt"><?php echo wp_kses_post( wp_trim_words( get_the_excerpt(), 30, '…' ) ); ?></p>
-		</section>
 
-		<?php if ( has_post_thumbnail() ) : ?>
-			<div class="card__image">
-				<?php the_post_thumbnail( 'large', array( 'loading' => 'lazy', 'alt' => esc_attr( get_the_title() ) ) ); ?>
-			</div>
-		<?php endif; ?>
+			<section class="mansa-article-section" aria-labelledby="mansa-article-body">
+				<h2 id="mansa-article-body" class="screen-reader-text"><?php esc_html_e( 'Article', 'generatepress-mansa-child' ); ?></h2>
+				<div class="mansa-article-content">
+					<?php the_content(); ?>
+				</div>
+			</section>
+		</article>
 
-		<section>
-			<div class="card__excerpt"><?php the_content(); ?></div>
-		</section>
-
-		<section aria-labelledby="mansa-article-related-products">
-			<h2 id="mansa-article-related-products"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_article_related_products_title', __( 'Related Products', 'generatepress-mansa-child' ) ) ); ?></h2>
+		<section class="mansa-article-section" aria-labelledby="mansa-article-related-products">
+			<h2 id="mansa-article-related-products" class="section__title"><?php echo esc_html( $products_title ); ?></h2>
 			<?php if ( ! empty( $related_products ) ) : ?>
 				<?php
 				$products_query = new WP_Query(
@@ -51,6 +81,8 @@ while ( have_posts() ) :
 						'post_type'      => 'mansa_product',
 						'posts_per_page' => 6,
 						'post__in'       => $related_products,
+						'orderby'        => 'post__in',
+						'post_status'    => 'publish',
 					)
 				);
 				?>
@@ -61,19 +93,20 @@ while ( have_posts() ) :
 							$products_query->the_post();
 							get_template_part( 'template-parts/card', 'product' );
 						endwhile;
+						wp_reset_postdata();
 						?>
 					</div>
-					<?php wp_reset_postdata(); ?>
 				<?php else : ?>
-					<p><?php esc_html_e( 'No related products found.', 'generatepress-mansa-child' ); ?></p>
+					<?php wp_reset_postdata(); ?>
+					<p class="mansa-article-empty"><?php esc_html_e( 'No related products found.', 'generatepress-mansa-child' ); ?></p>
 				<?php endif; ?>
 			<?php else : ?>
-				<p><?php esc_html_e( 'No related products yet.', 'generatepress-mansa-child' ); ?></p>
+				<p class="mansa-article-empty"><?php esc_html_e( 'No related products yet.', 'generatepress-mansa-child' ); ?></p>
 			<?php endif; ?>
 		</section>
 
-		<section aria-labelledby="mansa-article-related-brands">
-			<h2 id="mansa-article-related-brands"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_article_related_brands_title', __( 'Related Brands', 'generatepress-mansa-child' ) ) ); ?></h2>
+		<section class="mansa-article-section" aria-labelledby="mansa-article-related-brands">
+			<h2 id="mansa-article-related-brands" class="section__title"><?php echo esc_html( $brands_title ); ?></h2>
 			<?php if ( ! empty( $related_brands ) ) : ?>
 				<?php
 				$brands_query = new WP_Query(
@@ -81,6 +114,8 @@ while ( have_posts() ) :
 						'post_type'      => 'mansa_brand',
 						'posts_per_page' => 6,
 						'post__in'       => $related_brands,
+						'orderby'        => 'post__in',
+						'post_status'    => 'publish',
 					)
 				);
 				?>
@@ -91,29 +126,41 @@ while ( have_posts() ) :
 							$brands_query->the_post();
 							get_template_part( 'template-parts/card', 'brand' );
 						endwhile;
+						wp_reset_postdata();
 						?>
 					</div>
-					<?php wp_reset_postdata(); ?>
 				<?php else : ?>
-					<p><?php esc_html_e( 'No related brands found.', 'generatepress-mansa-child' ); ?></p>
+					<?php wp_reset_postdata(); ?>
+					<p class="mansa-article-empty"><?php esc_html_e( 'No related brands found.', 'generatepress-mansa-child' ); ?></p>
 				<?php endif; ?>
 			<?php else : ?>
-				<p><?php esc_html_e( 'No related brands yet.', 'generatepress-mansa-child' ); ?></p>
+				<p class="mansa-article-empty"><?php esc_html_e( 'No related brands yet.', 'generatepress-mansa-child' ); ?></p>
 			<?php endif; ?>
 		</section>
 
-		<section>
-			<h2><?php esc_html_e( 'Related articles', 'generatepress-mansa-child' ); ?></h2>
+		<section class="mansa-article-section" aria-labelledby="mansa-article-related-articles">
+			<h2 id="mansa-article-related-articles" class="section__title"><?php esc_html_e( 'Related articles', 'generatepress-mansa-child' ); ?></h2>
 			<?php
-			$related_articles = new WP_Query(
-				array(
-					'post_type'      => 'mansa_article',
-					'posts_per_page' => 6,
-					'orderby'        => 'date',
-					'order'          => 'DESC',
-					'post__not_in'   => array( $article_id ),
-				)
+			$related_articles_args = array(
+				'post_type'      => 'mansa_article',
+				'posts_per_page' => 6,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+				'post__not_in'   => array( $article_id ),
+				'post_status'    => 'publish',
 			);
+
+			if ( ! empty( $topics ) ) {
+				$related_articles_args['tax_query'] = array(
+					array(
+						'taxonomy' => 'mansa_article_topic',
+						'field'    => 'term_id',
+						'terms'    => wp_list_pluck( $topics, 'term_id' ),
+					),
+				);
+			}
+
+			$related_articles = new WP_Query( $related_articles_args );
 			?>
 			<?php if ( $related_articles->have_posts() ) : ?>
 				<div class="grid">
@@ -122,16 +169,15 @@ while ( have_posts() ) :
 						$related_articles->the_post();
 						get_template_part( 'template-parts/card', 'article' );
 					endwhile;
+					wp_reset_postdata();
 					?>
 				</div>
-				<?php wp_reset_postdata(); ?>
 			<?php else : ?>
-				<p><?php esc_html_e( 'No additional articles to show.', 'generatepress-mansa-child' ); ?></p>
+				<?php wp_reset_postdata(); ?>
+				<p class="mansa-article-empty"><?php esc_html_e( 'No additional articles to show.', 'generatepress-mansa-child' ); ?></p>
 			<?php endif; ?>
 		</section>
-
 	</main>
-
 	<?php
 endwhile;
 

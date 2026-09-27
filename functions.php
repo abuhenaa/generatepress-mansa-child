@@ -20,22 +20,32 @@ function gp_mansa_child_enqueue_assets() {
 	$parent_style = 'generatepress-style';
 
 	wp_enqueue_style( $parent_style, get_template_directory_uri() . '/style.css', array(), wp_get_theme( 'GeneratePress' )->get( 'Version' ) );
-	wp_enqueue_style( 'generatepress-mansa-child-style', get_stylesheet_uri(), array( $parent_style ), wp_get_theme()->get( 'Version' ) );
 
-	if ( is_singular( 'mansa_product' ) ) {
+	$child_style_deps = array( $parent_style );
+
+	if ( is_singular( array( 'mansa_product', 'mansa_brand', 'mansa_article' ) ) ) {
+		$slick_uri = get_stylesheet_directory_uri() . '/assets/vendor/slick';
+
+		wp_enqueue_style( 'slick', $slick_uri . '/slick.css', array(), '1.8.1' );
+		wp_enqueue_style( 'slick-theme', $slick_uri . '/slick-theme.css', array( 'slick' ), '1.8.1' );
+		$child_style_deps[] = 'slick-theme';
+
+		wp_enqueue_script( 'slick', $slick_uri . '/slick.min.js', array( 'jquery' ), '1.8.1', true );
 		wp_enqueue_script(
-			'generatepress-mansa-child-single-product',
-			get_stylesheet_directory_uri() . '/assets/js/single-product.js',
-			array(),
+			'generatepress-mansa-child-slick',
+			get_stylesheet_directory_uri() . '/assets/js/slick-init.js',
+			array( 'jquery', 'slick' ),
 			wp_get_theme()->get( 'Version' ),
 			true
 		);
 	}
 
-	if ( is_singular( 'mansa_brand' ) ) {
+	wp_enqueue_style( 'generatepress-mansa-child-style', get_stylesheet_uri(), $child_style_deps, wp_get_theme()->get( 'Version' ) );
+
+	if ( is_singular( 'mansa_product' ) ) {
 		wp_enqueue_script(
-			'generatepress-mansa-child-carousel',
-			get_stylesheet_directory_uri() . '/assets/js/carousel.js',
+			'generatepress-mansa-child-single-product',
+			get_stylesheet_directory_uri() . '/assets/js/single-product.js',
 			array(),
 			wp_get_theme()->get( 'Version' ),
 			true

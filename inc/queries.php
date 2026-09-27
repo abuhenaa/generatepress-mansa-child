@@ -192,3 +192,28 @@ function gp_mansa_child_get_article_query_args( $paged = 1 ) {
 
 	return $args;
 }
+
+/**
+ * Render a related-posts query as a Slick slider of cards.
+ *
+ * @param \WP_Query $query Query object.
+ * @param string    $card  Card template part name (product, brand, or article).
+ * @return bool True when slides were output.
+ */
+function gp_mansa_child_render_slick( $query, $card ) {
+	if ( ! $query instanceof WP_Query || ! $query->have_posts() ) {
+		return false;
+	}
+
+	echo '<div class="mansa-slick">';
+	while ( $query->have_posts() ) {
+		$query->the_post();
+		echo '<div class="mansa-slick__slide">';
+		get_template_part( 'template-parts/card', $card );
+		echo '</div>';
+	}
+	echo '</div>';
+	wp_reset_postdata();
+
+	return true;
+}

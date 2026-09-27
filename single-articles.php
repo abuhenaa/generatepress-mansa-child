@@ -87,15 +87,7 @@ while ( have_posts() ) :
 				);
 				?>
 				<?php if ( $products_query->have_posts() ) : ?>
-					<div class="grid">
-						<?php
-						while ( $products_query->have_posts() ) :
-							$products_query->the_post();
-							get_template_part( 'template-parts/card', 'product' );
-						endwhile;
-						wp_reset_postdata();
-						?>
-					</div>
+					<?php gp_mansa_child_render_slick( $products_query, 'product' ); ?>
 				<?php else : ?>
 					<?php wp_reset_postdata(); ?>
 					<p class="mansa-article-empty"><?php esc_html_e( 'No related products found.', 'generatepress-mansa-child' ); ?></p>
@@ -120,15 +112,7 @@ while ( have_posts() ) :
 				);
 				?>
 				<?php if ( $brands_query->have_posts() ) : ?>
-					<div class="grid">
-						<?php
-						while ( $brands_query->have_posts() ) :
-							$brands_query->the_post();
-							get_template_part( 'template-parts/card', 'brand' );
-						endwhile;
-						wp_reset_postdata();
-						?>
-					</div>
+					<?php gp_mansa_child_render_slick( $brands_query, 'brand' ); ?>
 				<?php else : ?>
 					<?php wp_reset_postdata(); ?>
 					<p class="mansa-article-empty"><?php esc_html_e( 'No related brands found.', 'generatepress-mansa-child' ); ?></p>
@@ -163,15 +147,7 @@ while ( have_posts() ) :
 			$related_articles = new WP_Query( $related_articles_args );
 			?>
 			<?php if ( $related_articles->have_posts() ) : ?>
-				<div class="grid">
-					<?php
-					while ( $related_articles->have_posts() ) :
-						$related_articles->the_post();
-						get_template_part( 'template-parts/card', 'article' );
-					endwhile;
-					wp_reset_postdata();
-					?>
-				</div>
+				<?php gp_mansa_child_render_slick( $related_articles, 'article' ); ?>
 			<?php else : ?>
 				<?php wp_reset_postdata(); ?>
 				<p class="mansa-article-empty"><?php esc_html_e( 'No additional articles to show.', 'generatepress-mansa-child' ); ?></p>

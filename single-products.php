@@ -236,20 +236,44 @@ while ( have_posts() ) :
 			}
 			$similar_query = new WP_Query( $similar_args );
 			if ( $similar_query->have_posts() ) :
+				gp_mansa_child_render_slick( $similar_query, 'product' );
+			else :
+				wp_reset_postdata();
 				?>
-				<div class="mansa-related-grid">
-					<?php
-					while ( $similar_query->have_posts() ) :
-						$similar_query->the_post();
-						get_template_part( 'template-parts/card', 'product' );
-					endwhile;
-					?>
-				</div>
-				<?php wp_reset_postdata(); ?>
-			<?php else : ?>
 				<p class="mansa-product-longdesc"><?php esc_html_e( 'No similar products found yet.', 'generatepress-mansa-child' ); ?></p>
 			<?php endif; ?>
 		</section>
+
+		<section class="mansa-product-section" aria-labelledby="mansa-product-related-brands">
+			<h2 id="mansa-product-related-brands" class="section__title"><?php echo esc_html( class_exists( 'Mansa\\Admin\\Settings' ) ? \Mansa\Admin\Settings::get_setting( 'mansa_product_related_brands_title', __( 'Related Brands', 'generatepress-mansa-child' ) ) : __( 'Related Brands', 'generatepress-mansa-child' ) ); ?></h2>
+			<?php
+			$related_brands_args = array(
+				'post_type'      => 'mansa_brand',
+				'posts_per_page' => 6,
+				'post_status'    => 'publish',
+			);
+			if ( $brand_id ) {
+				$related_brands_args['post__not_in'] = array( absint( $brand_id ) );
+			}
+			if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
+				$related_brands_args['tax_query'] = array(
+					array(
+						'taxonomy' => 'mansa_product_category',
+						'field'    => 'term_id',
+						'terms'    => wp_list_pluck( $categories, 'term_id' ),
+					),
+				);
+			}
+			$related_brands_query = new WP_Query( $related_brands_args );
+			if ( $related_brands_query->have_posts() ) :
+				gp_mansa_child_render_slick( $related_brands_query, 'brand' );
+			else :
+				wp_reset_postdata();
+				?>
+				<p class="mansa-product-longdesc"><?php esc_html_e( 'No related brands found yet.', 'generatepress-mansa-child' ); ?></p>
+			<?php endif; ?>
+		</section>
+
 		<section class="mansa-product-section" aria-labelledby="mansa-product-related-articles">
 			<h2 id="mansa-product-related-articles" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_product_related_articles_title', __( 'Related Articles', 'generatepress-mansa-child' ) ) ); ?></h2>
 			<?php
@@ -259,23 +283,12 @@ while ( have_posts() ) :
 				$related_posts = $relations->query_articles_by_products( array( $product_id ), array( 'posts_per_page' => 6 ) );
 			}
 			if ( $related_posts instanceof WP_Query && $related_posts->have_posts() ) :
+				gp_mansa_child_render_slick( $related_posts, 'article' );
+			else :
+				if ( $related_posts instanceof WP_Query ) {
+					wp_reset_postdata();
+				}
 				?>
-				<div class="mansa-related-list">
-					<?php
-					while ( $related_posts->have_posts() ) :
-						$related_posts->the_post();
-						$thumb = get_the_post_thumbnail_url( get_the_ID(), 'thumbnail' );
-						?>
-						<a href="<?php the_permalink(); ?>" class="mansa-related-list__item">
-							<img class="mansa-related-list__thumb" src="<?php echo esc_url( $thumb ?: 'https://placehold.co/72x48/f9fafb/9ca3af?text=Article' ); ?>" alt="<?php echo esc_attr( get_the_title() ); ?>" loading="lazy" />
-							<span class="mansa-related-list__title"><?php the_title(); ?></span>
-						</a>
-					<?php
-					endwhile;
-					?>
-				</div>
-				<?php wp_reset_postdata(); ?>
-			<?php else : ?>
 				<p class="mansa-product-longdesc"><?php esc_html_e( 'No related articles to show.', 'generatepress-mansa-child' ); ?></p>
 			<?php endif; ?>
 		</section>

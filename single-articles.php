@@ -10,9 +10,13 @@ get_header();
 while ( have_posts() ) :
 	the_post();
 
-	$article_id = get_the_ID();
-	$topics     = get_the_terms( $article_id, 'mansa_article_topic' );
-	$topics     = ( $topics && ! is_wp_error( $topics ) ) ? $topics : array();
+	$article_id   = get_the_ID();
+	$topics       = get_the_terms( $article_id, 'mansa_article_topic' );
+	$topics       = ( $topics && ! is_wp_error( $topics ) ) ? $topics : array();
+	$hero_content = get_post_meta( $article_id, '_mansa_article_hero_content', true );
+	if ( empty( $hero_content ) ) {
+		$hero_content = get_post_meta( $article_id, '_mansa_hero_content', true );
+	}
 
 	$related_products = array();
 	$related_brands   = array();
@@ -47,22 +51,28 @@ while ( have_posts() ) :
 				<?php endif; ?>
 
 				<h1 class="mansa-article-title"><?php the_title(); ?></h1>
-			</header>
 
-			<?php if ( has_post_thumbnail() ) : ?>
-				<figure class="mansa-article-image">
-					<?php
-					the_post_thumbnail(
-						'large',
-						array(
-							'loading'     => 'eager',
-							'fetchpriority' => 'high',
-							'alt'         => esc_attr( get_the_title() ),
-						)
-					);
-					?>
-				</figure>
-			<?php endif; ?>
+				<?php if ( ! empty( $hero_content ) ) : ?>
+					<div class="mansa-article-hero-content">
+						<p><?php echo nl2br( esc_html( $hero_content ) ); ?></p>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( has_post_thumbnail() ) : ?>
+					<figure class="mansa-article-image">
+						<?php
+						the_post_thumbnail(
+							'large',
+							array(
+								'loading'       => 'eager',
+								'fetchpriority' => 'high',
+								'alt'           => esc_attr( get_the_title() ),
+							)
+						);
+						?>
+					</figure>
+				<?php endif; ?>
+			</header>
 
 			<section class="mansa-article-section" aria-labelledby="mansa-article-body">
 				<h2 id="mansa-article-body" class="screen-reader-text"><?php esc_html_e( 'Article', 'generatepress-mansa-child' ); ?></h2>

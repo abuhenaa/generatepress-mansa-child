@@ -303,3 +303,126 @@ function gp_mansa_child_admin_scripts( $hook ) {
 	) );
 }
 add_action( 'admin_enqueue_scripts', 'gp_mansa_child_admin_scripts' );
+
+/**
+ * Register meta box for article hero content.
+ */
+function gp_mansa_child_register_article_meta_box() {
+	add_meta_box(
+		'mansa-article-hero-content',
+		__( 'Hero Content', 'generatepress-mansa-child' ),
+		'gp_mansa_child_render_article_hero_meta_box',
+		'mansa_article',
+		'side',
+		'default'
+	);
+}
+add_action( 'add_meta_boxes', 'gp_mansa_child_register_article_meta_box' );
+
+/**
+ * Render the article hero content meta box.
+ *
+ * @param \WP_Post $post Post object.
+ */
+function gp_mansa_child_render_article_hero_meta_box( $post ) {
+	wp_nonce_field( 'gp_mansa_child_save_article_hero_meta', 'gp_mansa_child_article_hero_meta_nonce' );
+
+	$hero_content = get_post_meta( $post->ID, '_mansa_article_hero_content', true );
+	if ( empty( $hero_content ) ) {
+		$hero_content = get_post_meta( $post->ID, '_mansa_hero_content', true );
+	}
+	?>
+	<div class="mansa-meta-row">
+		<label for="mansa_article_hero_content" class="screen-reader-text"><?php esc_html_e( 'Hero Content', 'generatepress-mansa-child' ); ?></label>
+		<textarea id="mansa_article_hero_content" name="mansa_article_hero_content" class="widefat" rows="5" placeholder="<?php esc_attr_e( 'Enter introductory hero content / subtitle...', 'generatepress-mansa-child' ); ?>"><?php echo esc_textarea( $hero_content ); ?></textarea>
+		<p class="description" style="margin-top: 6px; font-size: 12px; color: #666;"><?php esc_html_e( 'Introductory text displayed beneath the title in the article hero section.', 'generatepress-mansa-child' ); ?></p>
+	</div>
+	<?php
+}
+
+/**
+ * Save article hero meta box values.
+ *
+ * @param int $post_id Post ID.
+ */
+function gp_mansa_child_save_article_hero_meta( $post_id ) {
+	if ( ! isset( $_POST['gp_mansa_child_article_hero_meta_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['gp_mansa_child_article_hero_meta_nonce'] ), 'gp_mansa_child_save_article_hero_meta' ) ) {
+		return;
+	}
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	if ( isset( $_POST['mansa_article_hero_content'] ) ) {
+		$hero_content = sanitize_textarea_field( wp_unslash( $_POST['mansa_article_hero_content'] ) );
+		update_post_meta( $post_id, '_mansa_article_hero_content', $hero_content );
+	}
+}
+add_action( 'save_post_mansa_article', 'gp_mansa_child_save_article_hero_meta' );
+
+/**
+ * Register meta box for brand hero content.
+ */
+function gp_mansa_child_register_brand_meta_box() {
+	add_meta_box(
+		'mansa-brand-hero-content',
+		__( 'Hero Content', 'generatepress-mansa-child' ),
+		'gp_mansa_child_render_brand_hero_meta_box',
+		'mansa_brand',
+		'side',
+		'default'
+	);
+}
+add_action( 'add_meta_boxes', 'gp_mansa_child_register_brand_meta_box' );
+
+/**
+ * Render the brand hero content meta box.
+ *
+ * @param \WP_Post $post Post object.
+ */
+function gp_mansa_child_render_brand_hero_meta_box( $post ) {
+	wp_nonce_field( 'gp_mansa_child_save_brand_hero_meta', 'gp_mansa_child_brand_hero_meta_nonce' );
+
+	$hero_content = get_post_meta( $post->ID, '_mansa_brand_hero_content', true );
+	if ( empty( $hero_content ) ) {
+		$hero_content = get_post_meta( $post->ID, '_mansa_hero_content', true );
+	}
+	?>
+	<div class="mansa-meta-row">
+		<label for="mansa_brand_hero_content" class="screen-reader-text"><?php esc_html_e( 'Hero Content', 'generatepress-mansa-child' ); ?></label>
+		<textarea id="mansa_brand_hero_content" name="mansa_brand_hero_content" class="widefat" rows="5" placeholder="<?php esc_attr_e( 'Enter introductory hero content / subtitle...', 'generatepress-mansa-child' ); ?>"><?php echo esc_textarea( $hero_content ); ?></textarea>
+		<p class="description" style="margin-top: 6px; font-size: 12px; color: #666;"><?php esc_html_e( 'Introductory text displayed beneath the brand title in the brand hero section.', 'generatepress-mansa-child' ); ?></p>
+	</div>
+	<?php
+}
+
+/**
+ * Save brand hero meta box values.
+ *
+ * @param int $post_id Post ID.
+ */
+function gp_mansa_child_save_brand_hero_meta( $post_id ) {
+	if ( ! isset( $_POST['gp_mansa_child_brand_hero_meta_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['gp_mansa_child_brand_hero_meta_nonce'] ), 'gp_mansa_child_save_brand_hero_meta' ) ) {
+		return;
+	}
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	if ( isset( $_POST['mansa_brand_hero_content'] ) ) {
+		$hero_content = sanitize_textarea_field( wp_unslash( $_POST['mansa_brand_hero_content'] ) );
+		update_post_meta( $post_id, '_mansa_brand_hero_content', $hero_content );
+	}
+}
+add_action( 'save_post_mansa_brand', 'gp_mansa_child_save_brand_hero_meta' );
+

@@ -10,10 +10,17 @@ get_header();
 while ( have_posts() ) :
 	the_post();
 
-	$brand_id = get_the_ID();
+	$brand_id      = get_the_ID();
 	$brand_website = get_post_meta( $brand_id, '_mansa_brand_website', true );
-	$brand_social = get_post_meta( $brand_id, '_mansa_brand_social', true );
+	$brand_social  = get_post_meta( $brand_id, '_mansa_brand_social', true );
 	$founder_story = get_post_meta( $brand_id, '_mansa_brand_founder_story', true );
+	$hero_content  = get_post_meta( $brand_id, '_mansa_brand_hero_content', true );
+	if ( empty( $hero_content ) ) {
+		$hero_content = get_post_meta( $brand_id, '_mansa_hero_content', true );
+	}
+	if ( empty( $hero_content ) && has_excerpt() ) {
+		$hero_content = get_the_excerpt();
+	}
 
 	?>
 	<main class="mansa-brand-page">
@@ -21,21 +28,25 @@ while ( have_posts() ) :
 			<div class="mansa-brand-header">
 				<?php if ( has_post_thumbnail() ) : ?>
 					<div class="mansa-brand-image">
-						<?php the_post_thumbnail( 'large', array( 'loading' => 'lazy', 'alt' => esc_attr( get_the_title() ) ) ); ?>
+						<?php the_post_thumbnail( 'large', array( 'loading' => 'eager', 'fetchpriority' => 'high', 'alt' => esc_attr( get_the_title() ) ) ); ?>
 					</div>
 				<?php endif; ?>
 
 				<div class="mansa-brand-header__info">
 					<h1 class="mansa-brand-title"><?php the_title(); ?></h1>
-					<p class="mansa-brand-subtitle"><?php echo wp_kses_post( wp_trim_words( get_the_excerpt(), 30, '…' ) ); ?></p>
+					<?php if ( ! empty( $hero_content ) ) : ?>
+						<div class="mansa-brand-hero-content">
+							<p><?php echo nl2br( esc_html( $hero_content ) ); ?></p>
+						</div>
+					<?php endif; ?>
 
-					<div class="mansa-brand-contact">
-						<?php if ( $brand_website ) : ?>
+					<?php if ( $brand_website ) : ?>
+						<div class="mansa-brand-contact">
 							<a href="<?php echo esc_url( $brand_website ); ?>" class="button button--primary" target="_blank" rel="noopener noreferrer">
 								<?php esc_html_e( 'Visit Website', 'generatepress-mansa-child' ); ?>
 							</a>
-						<?php endif; ?>
-					</div>
+						</div>
+					<?php endif; ?>
 				</div>
 			</div>
 		</section>

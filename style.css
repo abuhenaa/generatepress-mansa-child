@@ -5,7 +5,7 @@ Description: A clean, minimal child theme for the Mansa Market discovery platfor
 Author:      Mansa Team
 Author URI:  https://example.com
 Template:    generatepress
-Version:     1.0.2
+Version:     1.0.3
 Text Domain: generatepress-mansa-child
 */
 
@@ -644,7 +644,7 @@ section {
 	font-size: 1.05rem;
 	line-height: 1.8;
 	color: var(--text, #1e293b);
-	max-width: 820px;
+	max-width: 960px;
 	margin: 0 auto;
 }
 

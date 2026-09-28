@@ -46,7 +46,7 @@ function gp_mansa_child_enqueue_assets() {
 		wp_enqueue_script(
 			'generatepress-mansa-child-single-product',
 			get_stylesheet_directory_uri() . '/assets/js/single-product.js',
-			array(),
+			array( 'jquery', 'slick' ),
 			wp_get_theme()->get( 'Version' ),
 			true
 		);
@@ -425,4 +425,65 @@ function gp_mansa_child_save_brand_hero_meta( $post_id ) {
 	}
 }
 add_action( 'save_post_mansa_brand', 'gp_mansa_child_save_brand_hero_meta' );
+
+/**
+ * Register meta box for product hero content.
+ */
+function gp_mansa_child_register_product_hero_meta_box() {
+	add_meta_box(
+		'mansa-product-hero-content',
+		__( 'Hero Content', 'generatepress-mansa-child' ),
+		'gp_mansa_child_render_product_hero_meta_box',
+		'mansa_product',
+		'side',
+		'default'
+	);
+}
+add_action( 'add_meta_boxes', 'gp_mansa_child_register_product_hero_meta_box' );
+
+/**
+ * Render the product hero content meta box.
+ *
+ * @param \WP_Post $post Post object.
+ */
+function gp_mansa_child_render_product_hero_meta_box( $post ) {
+	wp_nonce_field( 'gp_mansa_child_save_product_hero_meta', 'gp_mansa_child_product_hero_meta_nonce' );
+
+	$hero_content = get_post_meta( $post->ID, '_mansa_product_hero_content', true );
+	if ( empty( $hero_content ) ) {
+		$hero_content = get_post_meta( $post->ID, '_mansa_hero_content', true );
+	}
+	?>
+	<div class="mansa-meta-row">
+		<label for="mansa_product_hero_content" class="screen-reader-text"><?php esc_html_e( 'Hero Content', 'generatepress-mansa-child' ); ?></label>
+		<textarea id="mansa_product_hero_content" name="mansa_product_hero_content" class="widefat" rows="5" placeholder="<?php esc_attr_e( 'Enter introductory hero content / subtitle...', 'generatepress-mansa-child' ); ?>"><?php echo esc_textarea( $hero_content ); ?></textarea>
+		<p class="description" style="margin-top: 6px; font-size: 12px; color: #666;"><?php esc_html_e( 'Introductory text displayed beneath the title in the product hero section.', 'generatepress-mansa-child' ); ?></p>
+	</div>
+	<?php
+}
+
+/**
+ * Save product hero meta box values.
+ *
+ * @param int $post_id Post ID.
+ */
+function gp_mansa_child_save_product_hero_meta( $post_id ) {
+	if ( ! isset( $_POST['gp_mansa_child_product_hero_meta_nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['gp_mansa_child_product_hero_meta_nonce'] ), 'gp_mansa_child_save_product_hero_meta' ) ) {
+		return;
+	}
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	if ( isset( $_POST['mansa_product_hero_content'] ) ) {
+		$hero_content = sanitize_textarea_field( wp_unslash( $_POST['mansa_product_hero_content'] ) );
+		update_post_meta( $post_id, '_mansa_product_hero_content', $hero_content );
+	}
+}
+add_action( 'save_post_mansa_product', 'gp_mansa_child_save_product_hero_meta' );
 

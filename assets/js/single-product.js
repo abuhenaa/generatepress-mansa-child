@@ -1,61 +1,43 @@
-(function () {
+jQuery(function ($) {
 	'use strict';
 
-	function initProductGallery() {
-		var gallery = document.querySelector('.mansa-product-gallery');
-		if (!gallery) {
+	function initProductGallerySlider() {
+		var $gallery = $('.mansa-product-gallery__slider');
+		if (!$gallery.length) {
 			return;
 		}
 
-		var mainImage = gallery.querySelector('.mansa-product-gallery__main img');
-		var thumbs = gallery.querySelectorAll('.mansa-product-gallery__thumb');
-
-		thumbs.forEach(function (thumb) {
-			thumb.addEventListener('click', function (event) {
-				event.preventDefault();
-
-				if (!mainImage) {
-					return;
-				}
-
-				var src = thumb.getAttribute('data-full');
-				var alt = thumb.getAttribute('data-alt');
-
-				if (src) {
-					mainImage.setAttribute('src', src);
-				}
-
-				if (alt) {
-					mainImage.setAttribute('alt', alt);
-				}
-
-				thumbs.forEach(function (t) {
-					t.classList.remove('active');
-				});
-				thumb.classList.add('active');
-			});
-		});
-	}
-
-	function initFaqToggles() {
-		var toggles = document.querySelectorAll('.mansa-faq__question');
-		if (!toggles.length) {
+		if ($gallery.hasClass('slick-initialized')) {
 			return;
 		}
 
-		toggles.forEach(function (toggle) {
-			toggle.addEventListener('click', function () {
-				var item = toggle.closest('.mansa-faq__item');
-				if (!item) {
-					return;
-				}
-				item.classList.toggle('open');
-			});
+		$gallery.slick({
+			slidesToShow: 1,
+			slidesToScroll: 1,
+			dots: true,
+			arrows: true,
+			infinite: true,
+			fade: true,
+			speed: 350,
+			cssEase: 'cubic-bezier(0.25, 1, 0.5, 1)',
+			adaptiveHeight: false,
+			prevArrow: '<button type="button" class="slick-prev" aria-label="Previous">‹</button>',
+			nextArrow: '<button type="button" class="slick-next" aria-label="Next">›</button>'
+		});
+
+		// Recalculate position when images finish loading
+		$gallery.find('img').on('load', function () {
+			$gallery.slick('setPosition');
 		});
 	}
 
-	document.addEventListener('DOMContentLoaded', function () {
-		initProductGallery();
-		initFaqToggles();
+	initProductGallerySlider();
+
+	var resizeTimer;
+	$(window).on('resize orientationchange', function () {
+		clearTimeout(resizeTimer);
+		resizeTimer = setTimeout(function () {
+			$('.mansa-product-gallery__slider.slick-initialized').slick('resize');
+		}, 100);
 	});
-})();
+});

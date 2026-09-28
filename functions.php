@@ -163,6 +163,9 @@ function gp_mansa_child_render_product_meta_box( $post ) {
 	$gallery = get_post_meta( $post->ID, '_mansa_product_gallery', true );
 	$gallery = is_string( $gallery ) ? $gallery : '';
 
+	$testimonials = get_post_meta( $post->ID, '_mansa_product_testimonials', true );
+	$testimonials = is_string( $testimonials ) ? $testimonials : '';
+
 	$supplier_name = get_post_meta( $post->ID, '_mansa_supplier_name', true );
 	$supplier_desc = get_post_meta( $post->ID, '_mansa_supplier_description', true );
 	$supplier_url  = get_post_meta( $post->ID, '_mansa_supplier_url', true );
@@ -176,6 +179,7 @@ function gp_mansa_child_render_product_meta_box( $post ) {
 	}
 	?>
 	<div class="mansa-meta-grid">
+		<h4><?php esc_html_e( 'Product Gallery', 'generatepress-mansa-child' ); ?></h4>
 		<p><?php esc_html_e( 'Use the gallery picker to build the product image gallery. If left empty, the featured image will be used.', 'generatepress-mansa-child' ); ?></p>
 		<div class="mansa-meta-row">
 			<button type="button" class="button" id="mansa-product-gallery-button"><?php esc_html_e( 'Select Gallery Images', 'generatepress-mansa-child' ); ?></button>
@@ -192,6 +196,31 @@ function gp_mansa_child_render_product_meta_box( $post ) {
 							'<div class="mansa-meta-gallery__item" data-id="%1$d"><img src="%2$s" data-id="%1$d" /><button type="button" class="mansa-meta-gallery__remove" title="%3$s">&times;</button></div>',
 							esc_attr( $id ),
 							esc_url( $src ),
+							esc_attr__( 'Remove image', 'generatepress-mansa-child' )
+						);
+					}
+				}
+			}
+			?>
+		</div>
+
+		<h4><?php esc_html_e( 'Testimonials Gallery (What People Are Saying)', 'generatepress-mansa-child' ); ?></h4>
+		<p><?php esc_html_e( 'Upload and manage testimonial images or screenshots to display in the "What People Are Saying" slider on the product page.', 'generatepress-mansa-child' ); ?></p>
+		<div class="mansa-meta-row">
+			<button type="button" class="button" id="mansa-product-testimonials-button"><?php esc_html_e( 'Select Testimonial Images', 'generatepress-mansa-child' ); ?></button>
+			<input type="hidden" id="mansa-product-testimonials" name="mansa_product_testimonials" value="<?php echo esc_attr( $testimonials ); ?>" />
+		</div>
+		<div id="mansa-product-testimonials-preview" class="mansa-meta-gallery">
+			<?php
+			if ( $testimonials ) {
+				$t_ids = array_filter( array_map( 'absint', explode( ',', $testimonials ) ) );
+				foreach ( $t_ids as $t_id ) {
+					$t_src = wp_get_attachment_image_url( $t_id, 'thumbnail' );
+					if ( $t_src ) {
+						printf(
+							'<div class="mansa-meta-gallery__item" data-id="%1$d"><img src="%2$s" data-id="%1$d" /><button type="button" class="mansa-meta-gallery__remove" title="%3$s">&times;</button></div>',
+							esc_attr( $t_id ),
+							esc_url( $t_src ),
 							esc_attr__( 'Remove image', 'generatepress-mansa-child' )
 						);
 					}
@@ -257,6 +286,9 @@ function gp_mansa_child_save_product_meta( $post_id ) {
 	$gallery = isset( $_POST['mansa_product_gallery'] ) ? sanitize_text_field( wp_unslash( $_POST['mansa_product_gallery'] ) ) : '';
 	update_post_meta( $post_id, '_mansa_product_gallery', $gallery );
 
+	$testimonials = isset( $_POST['mansa_product_testimonials'] ) ? sanitize_text_field( wp_unslash( $_POST['mansa_product_testimonials'] ) ) : '';
+	update_post_meta( $post_id, '_mansa_product_testimonials', $testimonials );
+
 	update_post_meta( $post_id, '_mansa_supplier_name', sanitize_text_field( wp_unslash( $_POST['mansa_supplier_name'] ?? '' ) ) );
 	update_post_meta( $post_id, '_mansa_supplier_description', sanitize_textarea_field( wp_unslash( $_POST['mansa_supplier_description'] ?? '' ) ) );
 	update_post_meta( $post_id, '_mansa_supplier_url', esc_url_raw( wp_unslash( $_POST['mansa_supplier_url'] ?? '' ) ) );
@@ -301,11 +333,12 @@ function gp_mansa_child_admin_scripts( $hook ) {
 	);
 
 	wp_localize_script( 'gp-mansa-child-admin', 'mansaChildI18n', array(
-		'selectImages' => __( 'Select gallery images', 'generatepress-mansa-child' ),
-		'useSelected'  => __( 'Use selected images', 'generatepress-mansa-child' ),
-		'removeImage'  => __( 'Remove image', 'generatepress-mansa-child' ),
-		'label'        => __( 'Label', 'generatepress-mansa-child' ),
-		'url'          => __( 'URL', 'generatepress-mansa-child' ),
+		'selectImages'            => __( 'Select gallery images', 'generatepress-mansa-child' ),
+		'selectTestimonialImages' => __( 'Select testimonial images', 'generatepress-mansa-child' ),
+		'useSelected'             => __( 'Use selected images', 'generatepress-mansa-child' ),
+		'removeImage'             => __( 'Remove image', 'generatepress-mansa-child' ),
+		'label'                   => __( 'Label', 'generatepress-mansa-child' ),
+		'url'                     => __( 'URL', 'generatepress-mansa-child' ),
 	) );
 }
 add_action( 'admin_enqueue_scripts', 'gp_mansa_child_admin_scripts' );
@@ -320,7 +353,8 @@ function gp_mansa_child_admin_styles() {
 	}
 	?>
 	<style id="mansa-admin-metabox-styles">
-		#mansa-product-gallery-preview {
+		#mansa-product-gallery-preview,
+		#mansa-product-testimonials-preview {
 			display: flex;
 			flex-wrap: wrap;
 			gap: 12px;
@@ -340,6 +374,7 @@ function gp_mansa_child_admin_styles() {
 			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 		}
 		div#mansa-product-gallery-preview img,
+		div#mansa-product-testimonials-preview img,
 		.mansa-meta-gallery__item img {
 			width: 100%;
 			height: 100%;

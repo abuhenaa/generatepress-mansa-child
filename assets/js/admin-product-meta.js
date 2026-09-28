@@ -1,8 +1,6 @@
 (function (window, document, $) {
 	'use strict';
 
-	var frame;
-
 	function createGalleryItem( id, url ) {
 		var removeLabel = ( window.mansaChildI18n && window.mansaChildI18n.removeImage ) ? window.mansaChildI18n.removeImage : 'Remove image';
 		return (
@@ -13,8 +11,12 @@
 		);
 	}
 
-	function updateGalleryPreview( ids ) {
-		var $preview = $( '#mansa-product-gallery-preview' );
+	function parseGalleryField( $input ) {
+		var val = $input.val();
+		return val ? val.split( ',' ).map( function (id) { return parseInt( id, 10 ); } ).filter( Boolean ) : [];
+	}
+
+	function updateGalleryPreview( $preview, ids ) {
 		$preview.empty();
 
 		ids.forEach( function ( id ) {
@@ -33,33 +35,20 @@
 		} );
 	}
 
-	function parseGalleryField() {
-		var val = $( '#mansa-product-gallery' ).val();
-		return val ? val.split( ',' ).map( function (id) { return parseInt( id, 10 ); } ).filter( Boolean ) : [];
-	}
+	function setupGalleryPicker( options ) {
+		var $button = $( options.button );
+		var $input = $( options.input );
+		var $preview = $( options.preview );
+		var frame;
 
-	function updateGalleryField( ids ) {
-		$( '#mansa-product-gallery' ).val( ids.join( ',' ) );
-		updateGalleryPreview( ids );
-	}
+		if ( !$button.length || !$input.length ) {
+			return;
+		}
 
-	function createBuyLinkRow( label, url ) {
-		var index = $( '#mansa-buy-links .mansa-buy-link-row' ).length;
-		var $row = $(
-			'<div class="mansa-buy-link-row">' +
-				'<input type="text" name="mansa_buy_links[' + index + '][label]" value="' + ( label || '' ) + '" placeholder="' + window.mansaChildI18n.label + '" />' +
-				'<input type="url" name="mansa_buy_links[' + index + '][url]" value="' + ( url || '' ) + '" placeholder="' + window.mansaChildI18n.url + '" />' +
-				'<button type="button" class="button mansa-buy-link-remove">&times;</button>' +
-			'</div>'
-		);
-		return $row;
-	}
-
-	$( document ).ready( function () {
-		$( '#mansa-product-gallery-button' ).on( 'click', function ( e ) {
+		$button.on( 'click', function ( e ) {
 			e.preventDefault();
 
-			var initialSelection = parseGalleryField();
+			var initialSelection = parseGalleryField( $input );
 
 			if ( frame ) {
 				frame.open();
@@ -67,7 +56,7 @@
 			}
 
 			frame = wp.media({
-				title: window.mansaChildI18n.selectImages,
+				title: options.title || window.mansaChildI18n.selectImages,
 				button: { text: window.mansaChildI18n.useSelected },
 				multiple: true,
 				library: { type: 'image' }
@@ -88,22 +77,60 @@
 				selection.each( function ( attachment ) {
 					ids.push( attachment.id );
 				} );
-				updateGalleryField( ids );
+				$input.val( ids.join( ',' ) );
+				updateGalleryPreview( $preview, ids );
 			} );
 
 			frame.open();
 		} );
+	}
 
-		// Remove individual gallery image
+	function createBuyLinkRow( label, url ) {
+		var index = $( '#mansa-buy-links .mansa-buy-link-row' ).length;
+		var $row = $(
+			'<div class="mansa-buy-link-row">' +
+				'<input type="text" name="mansa_buy_links[' + index + '][label]" value="' + ( label || '' ) + '" placeholder="' + window.mansaChildI18n.label + '" />' +
+				'<input type="url" name="mansa_buy_links[' + index + '][url]" value="' + ( url || '' ) + '" placeholder="' + window.mansaChildI18n.url + '" />' +
+				'<button type="button" class="button mansa-buy-link-remove">&times;</button>' +
+			'</div>'
+		);
+		return $row;
+	}
+
+	$( document ).ready( function () {
+		// Main product gallery
+		setupGalleryPicker({
+			button: '#mansa-product-gallery-button',
+			input: '#mansa-product-gallery',
+			preview: '#mansa-product-gallery-preview',
+			title: window.mansaChildI18n.selectImages
+		});
+
+		// Testimonials gallery
+		setupGalleryPicker({
+			button: '#mansa-product-testimonials-button',
+			input: '#mansa-product-testimonials',
+			preview: '#mansa-product-testimonials-preview',
+			title: window.mansaChildI18n.selectTestimonialImages || window.mansaChildI18n.selectImages
+		});
+
+		// Remove individual gallery / testimonial image
 		$( document ).on( 'click', '.mansa-meta-gallery__remove', function ( e ) {
 			e.preventDefault();
 			var $item = $( this ).closest( '.mansa-meta-gallery__item' );
+			var $galleryContainer = $item.closest( '.mansa-meta-gallery' );
+			var $input = $galleryContainer.siblings( '.mansa-meta-row' ).find( 'input[type="hidden"]' );
+
+			if ( !$input.length ) {
+				$input = $galleryContainer.parent().find( 'input[type="hidden"]' );
+			}
+
 			var idToRemove = parseInt( $item.data( 'id' ), 10 );
-			var currentIds = parseGalleryField();
+			var currentIds = parseGalleryField( $input );
 			var newIds = currentIds.filter( function ( id ) {
 				return id !== idToRemove;
 			} );
-			$( '#mansa-product-gallery' ).val( newIds.join( ',' ) );
+			$input.val( newIds.join( ',' ) );
 			$item.remove();
 		} );
 

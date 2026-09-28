@@ -50,6 +50,20 @@ while ( have_posts() ) :
 		}
 	}
 
+	// Testimonials images (meta box stored as comma-separated attachment IDs).
+	$testimonial_ids = array_filter( array_map( 'absint', explode( ',', get_post_meta( $product_id, '_mansa_product_testimonials', true ) ) ) );
+	$testimonial_images = array();
+	foreach ( $testimonial_ids as $attachment_id ) {
+		$attachment_id = absint( $attachment_id );
+		$src           = wp_get_attachment_image_url( $attachment_id, 'large' );
+		if ( $src ) {
+			$testimonial_images[] = array(
+				'url' => $src,
+				'alt' => get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) ?: sprintf( /* translators: %s: product title */ __( 'Testimonial for %s', 'generatepress-mansa-child' ), get_the_title( $product_id ) ),
+			);
+		}
+	}
+
 	$buy_links = get_post_meta( $product_id, '_mansa_buy_links', true );
 	if ( is_string( $buy_links ) ) {
 		$buy_links = json_decode( $buy_links, true );
@@ -92,7 +106,7 @@ while ( have_posts() ) :
 				<?php endif; ?>
 
 				<div class="mansa-product-gallery">
-					<?php if ( count( $gallery_images) > 1 ) : ?>
+					<?php if ( count( $gallery_images ) > 1 ) : ?>
 						<div class="mansa-product-gallery__slider">
 							<?php foreach ( $gallery_images as $image ) : ?>
 								<div class="mansa-product-gallery__slide">
@@ -138,6 +152,31 @@ while ( have_posts() ) :
 			<section class="mansa-product-section mansa-product-section--content" aria-label="<?php esc_attr_e( 'Product details', 'generatepress-mansa-child' ); ?>">
 				<div class="mansa-product-content">
 					<?php the_content(); ?>
+				</div>
+			</section>
+		<?php endif; ?>
+
+		<?php if ( ! empty( $testimonial_images ) ) : ?>
+			<section class="mansa-product-section mansa-product-testimonials-section" aria-labelledby="mansa-product-testimonials">
+				<h2 id="mansa-product-testimonials" class="section__title"><?php echo esc_html( class_exists( 'Mansa\\Admin\\Settings' ) ? \Mansa\Admin\Settings::get_setting( 'mansa_product_testimonials_title', __( 'What People Are Saying', 'generatepress-mansa-child' ) ) : __( 'What People Are Saying', 'generatepress-mansa-child' ) ); ?></h2>
+				<div class="mansa-product-testimonials-slider-wrap">
+					<?php if ( count( $testimonial_images ) > 1 ) : ?>
+						<div class="mansa-product-testimonials-slider">
+							<?php foreach ( $testimonial_images as $image ) : ?>
+								<div class="mansa-product-testimonial__slide">
+									<div class="mansa-product-testimonial__card">
+										<img src="<?php echo esc_url( $image['url'] ); ?>" alt="<?php echo esc_attr( $image['alt'] ); ?>" loading="lazy" />
+									</div>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					<?php else : ?>
+						<div class="mansa-product-testimonial__single">
+							<div class="mansa-product-testimonial__card">
+								<img src="<?php echo esc_url( $testimonial_images[0]['url'] ); ?>" alt="<?php echo esc_attr( $testimonial_images[0]['alt'] ); ?>" loading="lazy" />
+							</div>
+						</div>
+					<?php endif; ?>
 				</div>
 			</section>
 		<?php endif; ?>

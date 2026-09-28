@@ -3,14 +3,32 @@
 
 	var frame;
 
+	function createGalleryItem( id, url ) {
+		var removeLabel = ( window.mansaChildI18n && window.mansaChildI18n.removeImage ) ? window.mansaChildI18n.removeImage : 'Remove image';
+		return (
+			'<div class="mansa-meta-gallery__item" data-id="' + id + '">' +
+				'<img src="' + url + '" data-id="' + id + '" />' +
+				'<button type="button" class="mansa-meta-gallery__remove" title="' + removeLabel + '">&times;</button>' +
+			'</div>'
+		);
+	}
+
 	function updateGalleryPreview( ids ) {
 		var $preview = $( '#mansa-product-gallery-preview' );
 		$preview.empty();
 
 		ids.forEach( function ( id ) {
-			var url = wp.media.attachment( id ).attributes.url;
-			if ( url ) {
-				$preview.append( '<img src="' + url + '" data-id="' + id + '" />' );
+			var attachment = wp.media.attachment( id );
+			if ( attachment && attachment.attributes && attachment.attributes.url ) {
+				var url = ( attachment.attributes.sizes && attachment.attributes.sizes.thumbnail ) ? attachment.attributes.sizes.thumbnail.url : attachment.attributes.url;
+				$preview.append( createGalleryItem( id, url ) );
+			} else if ( attachment ) {
+				attachment.fetch().done( function () {
+					var url = ( attachment.attributes.sizes && attachment.attributes.sizes.thumbnail ) ? attachment.attributes.sizes.thumbnail.url : attachment.attributes.url;
+					if ( url && !$preview.find( '.mansa-meta-gallery__item[data-id="' + id + '"]' ).length ) {
+						$preview.append( createGalleryItem( id, url ) );
+					}
+				} );
 			}
 		} );
 	}
@@ -74,6 +92,19 @@
 			} );
 
 			frame.open();
+		} );
+
+		// Remove individual gallery image
+		$( document ).on( 'click', '.mansa-meta-gallery__remove', function ( e ) {
+			e.preventDefault();
+			var $item = $( this ).closest( '.mansa-meta-gallery__item' );
+			var idToRemove = parseInt( $item.data( 'id' ), 10 );
+			var currentIds = parseGalleryField();
+			var newIds = currentIds.filter( function ( id ) {
+				return id !== idToRemove;
+			} );
+			$( '#mansa-product-gallery' ).val( newIds.join( ',' ) );
+			$item.remove();
 		} );
 
 		$( document ).on( 'click', '.mansa-buy-link-remove', function ( e ) {

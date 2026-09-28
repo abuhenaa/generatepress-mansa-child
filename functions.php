@@ -188,7 +188,12 @@ function gp_mansa_child_render_product_meta_box( $post ) {
 				foreach ( $ids as $id ) {
 					$src = wp_get_attachment_image_url( $id, 'thumbnail' );
 					if ( $src ) {
-						printf( '<img src="%s" data-id="%d" />', esc_url( $src ), esc_attr( $id ) );
+						printf(
+							'<div class="mansa-meta-gallery__item" data-id="%1$d"><img src="%2$s" data-id="%1$d" /><button type="button" class="mansa-meta-gallery__remove" title="%3$s">&times;</button></div>',
+							esc_attr( $id ),
+							esc_url( $src ),
+							esc_attr__( 'Remove image', 'generatepress-mansa-child' )
+						);
 					}
 				}
 			}
@@ -298,11 +303,92 @@ function gp_mansa_child_admin_scripts( $hook ) {
 	wp_localize_script( 'gp-mansa-child-admin', 'mansaChildI18n', array(
 		'selectImages' => __( 'Select gallery images', 'generatepress-mansa-child' ),
 		'useSelected'  => __( 'Use selected images', 'generatepress-mansa-child' ),
-		'label'       => __( 'Label', 'generatepress-mansa-child' ),
-		'url'         => __( 'URL', 'generatepress-mansa-child' ),
+		'removeImage'  => __( 'Remove image', 'generatepress-mansa-child' ),
+		'label'        => __( 'Label', 'generatepress-mansa-child' ),
+		'url'          => __( 'URL', 'generatepress-mansa-child' ),
 	) );
 }
 add_action( 'admin_enqueue_scripts', 'gp_mansa_child_admin_scripts' );
+
+/**
+ * Output admin styles for custom post type meta boxes.
+ */
+function gp_mansa_child_admin_styles() {
+	$screen = get_current_screen();
+	if ( ! $screen || ! in_array( $screen->post_type, array( 'mansa_product', 'mansa_brand', 'mansa_article' ), true ) ) {
+		return;
+	}
+	?>
+	<style id="mansa-admin-metabox-styles">
+		#mansa-product-gallery-preview {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 12px;
+			margin-top: 12px;
+		}
+		.mansa-meta-gallery__item {
+			position: relative;
+			width: 200px;
+			height: 150px;
+			border: 1px solid #ccd0d4;
+			border-radius: 8px;
+			overflow: hidden;
+			background: #f0f0f1;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+		}
+		div#mansa-product-gallery-preview img,
+		.mansa-meta-gallery__item img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			display: block;
+			margin: 0;
+		}
+		.mansa-meta-gallery__remove {
+			position: absolute;
+			top: 6px;
+			right: 6px;
+			width: 24px;
+			height: 24px;
+			line-height: 20px;
+			text-align: center;
+			padding: 0;
+			background: rgba(220, 38, 38, 0.92);
+			color: #ffffff;
+			border: none;
+			border-radius: 50%;
+			cursor: pointer;
+			font-size: 16px;
+			font-weight: 700;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+			transition: background 0.15s ease, transform 0.15s ease;
+		}
+		.mansa-meta-gallery__remove:hover {
+			background: #b91c1c;
+			transform: scale(1.1);
+		}
+		.mansa-buy-link-row {
+			display: flex;
+			gap: 8px;
+			align-items: center;
+			margin-bottom: 8px;
+		}
+		.mansa-buy-link-row input[type="text"],
+		.mansa-buy-link-row input[type="url"] {
+			flex: 1;
+		}
+		.mansa-buy-link-remove {
+			color: #dc2626;
+			border-color: #fca5a5;
+		}
+	</style>
+	<?php
+}
+add_action( 'admin_head', 'gp_mansa_child_admin_styles' );
+
 
 /**
  * Register meta box for article hero content.

@@ -17,6 +17,10 @@ if ( ! $post_id ) {
 $box_title = ! empty( $args['title'] ) ? $args['title'] : __( 'Support Made in Africa', 'generatepress-mansa-child' );
 $box_desc  = ! empty( $args['desc'] ) ? $args['desc'] : __( 'Help more people discover African-made products. Like and share this product to spread the word', 'generatepress-mansa-child' );
 
+if ( function_exists( 'mansa_enqueue_like_share_scripts' ) ) {
+	mansa_enqueue_like_share_scripts();
+}
+
 $likes      = function_exists( 'mansa_get_product_likes' ) ? mansa_get_product_likes( $post_id ) : 0;
 $post_title = get_the_title( $post_id );
 $post_url   = get_permalink( $post_id );

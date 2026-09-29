@@ -52,24 +52,12 @@ function gp_mansa_child_enqueue_assets() {
 			wp_get_theme()->get( 'Version' ),
 			true
 		);
+	}
 
-		wp_enqueue_script(
-			'generatepress-mansa-child-like-share',
-			get_stylesheet_directory_uri() . '/assets/js/like-share.js',
-			array(),
-			wp_get_theme()->get( 'Version' ),
-			true
-		);
-
-		wp_localize_script(
-			'generatepress-mansa-child-like-share',
-			'mansa_like_share',
-			array(
-				'ajax_url'    => admin_url( 'admin-ajax.php' ),
-				'nonce'       => wp_create_nonce( 'mansa_like_nonce' ),
-				'copied_text' => __( 'Link copied to clipboard!', 'generatepress-mansa-child' ),
-			)
-		);
+	if ( is_singular( array( 'mansa_product', 'mansa_article', 'mansa_brand' ) ) ) {
+		if ( function_exists( 'mansa_enqueue_like_share_scripts' ) ) {
+			mansa_enqueue_like_share_scripts();
+		}
 	}
 
 	wp_enqueue_script(

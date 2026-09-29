@@ -57,6 +57,31 @@ add_action( 'wp_ajax_mansa_toggle_like', 'mansa_ajax_toggle_product_like' );
 add_action( 'wp_ajax_nopriv_mansa_toggle_like', 'mansa_ajax_toggle_product_like' );
 
 /**
+ * Enqueue Like & Share script and localize data.
+ */
+function mansa_enqueue_like_share_scripts() {
+	if ( ! wp_script_is( 'generatepress-mansa-child-like-share', 'enqueued' ) ) {
+		wp_enqueue_script(
+			'generatepress-mansa-child-like-share',
+			get_stylesheet_directory_uri() . '/assets/js/like-share.js',
+			array(),
+			wp_get_theme()->get( 'Version' ),
+			true
+		);
+
+		wp_localize_script(
+			'generatepress-mansa-child-like-share',
+			'mansa_like_share',
+			array(
+				'ajax_url'    => admin_url( 'admin-ajax.php' ),
+				'nonce'       => wp_create_nonce( 'mansa_like_nonce' ),
+				'copied_text' => __( 'Link copied to clipboard!', 'generatepress-mansa-child' ),
+			)
+		);
+	}
+}
+
+/**
  * Shortcode to render the Support Made in Africa (Like & Share) box.
  *
  * Usage:
@@ -88,26 +113,8 @@ function mansa_support_box_shortcode( $atts = array() ) {
 		$atts['post_id'] = $atts['id'];
 	}
 
-	// Ensure the script and localized data are enqueued when shortcode is used
-	if ( ! wp_script_is( 'generatepress-mansa-child-like-share', 'enqueued' ) ) {
-		wp_enqueue_script(
-			'generatepress-mansa-child-like-share',
-			get_stylesheet_directory_uri() . '/assets/js/like-share.js',
-			array(),
-			wp_get_theme()->get( 'Version' ),
-			true
-		);
+	mansa_enqueue_like_share_scripts();
 
-		wp_localize_script(
-			'generatepress-mansa-child-like-share',
-			'mansa_like_share',
-			array(
-				'ajax_url'    => admin_url( 'admin-ajax.php' ),
-				'nonce'       => wp_create_nonce( 'mansa_like_nonce' ),
-				'copied_text' => __( 'Link copied to clipboard!', 'generatepress-mansa-child' ),
-			)
-		);
-	}
 
 	ob_start();
 	get_template_part(

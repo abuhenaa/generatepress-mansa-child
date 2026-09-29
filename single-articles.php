@@ -80,6 +80,10 @@ while ( have_posts() ) :
 					<?php the_content(); ?>
 				</div>
 			</section>
+
+			<?php get_template_part( 'template-parts/product-support-box' ); ?>
+
+			<?php mansa_render_ad_placement( 1 ); ?>
 		</article>
 
 		<section class="mansa-article-section" aria-labelledby="mansa-article-related-products">
@@ -163,6 +167,8 @@ while ( have_posts() ) :
 				<p class="mansa-article-empty"><?php esc_html_e( 'No additional articles to show.', 'generatepress-mansa-child' ); ?></p>
 			<?php endif; ?>
 		</section>
+
+		<?php mansa_render_ad_placement( 2 ); ?>
 	</main>
 	<?php
 endwhile;

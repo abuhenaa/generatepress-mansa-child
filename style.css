@@ -5,7 +5,7 @@ Description: A clean, minimal child theme for the Mansa Market discovery platfor
 Author:      Mansa Team
 Author URI:  https://example.com
 Template:    generatepress
-Version:     1.0.3
+Version:     1.0.5
 Text Domain: generatepress-mansa-child
 */
 
@@ -141,12 +141,34 @@ section {
 	background: rgba(37, 99, 235, 0.12);
 }
 
-.header {
-	background: #ffffff;
-	border-bottom: 1px solid var(--border);
-	position: sticky;
-	top: 0;
-	z-index: 50;
+/* Sticky Header (Desktop & Mobile - JS Powered) */
+.sticky-header-spacer {
+	width: 100%;
+	visibility: hidden;
+}
+
+.site-header.is-sticky,
+#masthead.is-sticky,
+.header.is-sticky {
+	position: fixed !important;
+	left: 0;
+	right: 0;
+	width: 100% !important;
+	z-index: 9999 !important;
+	background-color: #ffffff;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+	margin: 0 !important;
+	transition: box-shadow 0.2s ease;
+}
+
+/* Ensure mobile navigation dropdown remains scrollable within viewport */
+@media (max-width: 768px) {
+	.site-header.is-sticky .main-navigation.toggled .main-nav > ul,
+	.main-navigation.toggled .main-nav > ul {
+		max-height: calc(100vh - 80px);
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
 }
 
 .header__inner {
@@ -828,7 +850,164 @@ section {
 	background: var(--accent, #2563eb);
 }
 
+/* ==========================================================================
+   Support Made in Africa Box (Like & Share)
+   ========================================================================== */
+.mansa-product-support-section {
+	margin-bottom: 3.5rem;
+}
 
+.mansa-support-box {
+	background: #ffffff;
+	border: 1px solid var(--border, #e2e8f0);
+	border-radius: 14px;
+	padding: 2rem 2.25rem;
+	box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+}
+
+.mansa-support-box__title {
+	font-size: 1.35rem;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 0 0 0.5rem;
+	line-height: 1.3;
+}
+
+.mansa-support-box__desc {
+	font-size: 1.05rem;
+	color: #334155;
+	line-height: 1.6;
+	margin: 0 0 1.5rem;
+	max-width: 640px;
+}
+
+.mansa-support-box__actions {
+	display: flex;
+	align-items: center;
+	gap: 2rem;
+}
+
+.mansa-support-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	background: none;
+	border: none;
+	border-radius: 5px;
+	padding: 0.35rem 0.25rem;
+	cursor: pointer;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: #0f172a;
+	line-height: 1;
+	transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.mansa-support-btn:hover {
+	color: var(--accent, #2563eb);
+}
+
+.mansa-support-icon {
+	flex-shrink: 0;
+	transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), stroke 0.2s ease, fill 0.2s ease;
+}
+
+.mansa-support-btn:hover .mansa-support-icon {
+	transform: scale(1.15);
+}
+
+/* Like active state */
+.mansa-support-btn--like.is-liked {
+	color: #e11d48;
+}
+
+.mansa-support-btn--like.is-liked .mansa-support-icon--heart {
+	fill: #e11d48;
+	stroke: #e11d48;
+	animation: mansaHeartPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mansa-support-btn__count {
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: #64748b;
+	margin-left: 0.15rem;
+}
+
+.mansa-support-btn--like.is-liked .mansa-support-btn__count {
+	color: #e11d48;
+}
+
+@keyframes mansaHeartPop {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.35);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* Copy Toast Notification */
+.mansa-toast {
+	position: fixed;
+	bottom: 2rem;
+	right: 2rem;
+	z-index: 10000;
+	background: #0f172a;
+	color: #ffffff;
+	font-size: 0.95rem;
+	font-weight: 600;
+	padding: 0.85rem 1.4rem;
+	border-radius: 8px;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+	opacity: 0;
+	transform: translateY(12px);
+	transition: opacity 0.25s ease, transform 0.25s ease;
+	pointer-events: none;
+}
+
+.mansa-toast.is-visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+	.mansa-support-box {
+		padding: 1.5rem 1.25rem;
+	}
+	.mansa-toast {
+		left: 1rem;
+		right: 1rem;
+		bottom: 1rem;
+		text-align: center;
+	}
+}
+
+/* ==========================================================================
+   Ad Placements
+   ========================================================================== */
+.mansa-ad-placement {
+	margin: 3rem auto;
+	text-align: center;
+	max-width: 100%;
+	clear: both;
+}
+
+.mansa-ad-placement__inner {
+	display: inline-block;
+	max-width: 100%;
+}
+
+.mansa-ad-placement img {
+	max-width: 100%;
+	height: auto;
+	margin: 0 auto;
+	display: block;
+	border-radius: 8px;
+}
 
 /* Brand page styles */
 .mansa-brand-page {
@@ -1500,4 +1679,113 @@ html, body {
 	.mansa-article-hero-content {
 		font-size: 0.975rem;
 	}
+}
+
+/* Brand Page - Products Image Carousel */
+.mansa-brand-products-section {
+	margin-bottom: 3.5rem;
+}
+
+.mansa-brand-product-image-card {
+	display: flex;
+	flex-direction: column;
+	background: #ffffff;
+	border: 1px solid var(--border, #e2e8f0);
+	border-radius: 18px;
+	overflow: hidden;
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+	text-decoration: none !important;
+	transition: transform 0.25s ease, box-shadow 0.25s ease;
+	height: 100%;
+	width: 100%;
+}
+
+.mansa-brand-product-image-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+}
+
+.mansa-brand-product-thumb {
+	width: 100%;
+	height: 260px;
+	background: #fafafa;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	padding: 10px;
+	box-sizing: border-box;
+}
+
+.mansa-brand-product-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	transition: transform 0.35s ease;
+	border-radius: 12px;
+}
+
+.mansa-brand-product-image-card:hover .mansa-brand-product-thumb img {
+	transform: scale(1.05);
+}
+
+.mansa-placeholder-thumb {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #f1f5f9;
+	color: #64748b;
+	font-weight: 500;
+	padding: 1rem;
+	text-align: center;
+}
+
+.mansa-brand-product-info {
+	padding: 1rem 1.25rem 1.25rem;
+	background: #ffffff;
+	border-top: 1px solid var(--border, #f1f5f9);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	text-align: center;
+}
+
+.mansa-brand-product-title {
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: var(--text-color, #1e293b);
+	margin: 0;
+	line-height: 1.35;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.mansa-brand-product-cta {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--primary, #2563eb);
+	display: inline-block;
+	margin-top: 4px;
+	transition: color 0.2s ease;
+}
+
+.mansa-brand-product-image-card:hover .mansa-brand-product-cta {
+	color: var(--primary-hover, #1d4ed8);
+	text-decoration: underline;
+}
+
+.mansa-brand-products-slider .slick-slide {
+	height: auto;
+	padding: 0 10px;
+	box-sizing: border-box;
+}
+
+.mansa-brand-products-slider .mansa-slick__slide {
+	height: 100%;
+	display: flex;
 }

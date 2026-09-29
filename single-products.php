@@ -156,6 +156,8 @@ while ( have_posts() ) :
 			</section>
 		<?php endif; ?>
 
+		<?php mansa_render_ad_placement( 1 ); ?>
+
 		<?php if ( ! empty( $testimonial_images ) ) : ?>
 			<section class="mansa-product-section mansa-product-testimonials-section" aria-labelledby="mansa-product-testimonials">
 				<h2 id="mansa-product-testimonials" class="section__title"><?php echo esc_html( class_exists( 'Mansa\\Admin\\Settings' ) ? \Mansa\Admin\Settings::get_setting( 'mansa_product_testimonials_title', __( 'What People Are Saying', 'generatepress-mansa-child' ) ) : __( 'What People Are Saying', 'generatepress-mansa-child' ) ); ?></h2>
@@ -181,35 +183,7 @@ while ( have_posts() ) :
 			</section>
 		<?php endif; ?>
 
-		<section class="mansa-product-section" aria-labelledby="mansa-product-related-brands">
-			<h2 id="mansa-product-related-brands" class="section__title"><?php echo esc_html( class_exists( 'Mansa\\Admin\\Settings' ) ? \Mansa\Admin\Settings::get_setting( 'mansa_product_related_brands_title', __( 'Related Brands', 'generatepress-mansa-child' ) ) : __( 'Related Brands', 'generatepress-mansa-child' ) ); ?></h2>
-			<?php
-			$related_brands_args = array(
-				'post_type'      => 'mansa_brand',
-				'posts_per_page' => 6,
-				'post_status'    => 'publish',
-			);
-			if ( $brand_id ) {
-				$related_brands_args['post__not_in'] = array( absint( $brand_id ) );
-			}
-			if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
-				$related_brands_args['tax_query'] = array(
-					array(
-						'taxonomy' => 'mansa_product_category',
-						'field'    => 'term_id',
-						'terms'    => wp_list_pluck( $categories, 'term_id' ),
-					),
-				);
-			}
-			$related_brands_query = new WP_Query( $related_brands_args );
-			if ( $related_brands_query->have_posts() ) :
-				gp_mansa_child_render_slick( $related_brands_query, 'brand' );
-			else :
-				wp_reset_postdata();
-				?>
-				<p class="mansa-product-empty"><?php esc_html_e( 'No related brands found yet.', 'generatepress-mansa-child' ); ?></p>
-			<?php endif; ?>
-		</section>
+		<?php get_template_part( 'template-parts/product-support-box' ); ?>
 
 		<section class="mansa-product-section" aria-labelledby="mansa-product-related-articles">
 			<h2 id="mansa-product-related-articles" class="section__title"><?php echo esc_html( class_exists( 'Mansa\\Admin\\Settings' ) ? \Mansa\Admin\Settings::get_setting( 'mansa_product_related_articles_title', __( 'Related Articles', 'generatepress-mansa-child' ) ) : __( 'Related Articles', 'generatepress-mansa-child' ) ); ?></h2>
@@ -229,6 +203,36 @@ while ( have_posts() ) :
 				<p class="mansa-product-empty"><?php esc_html_e( 'No related articles to show.', 'generatepress-mansa-child' ); ?></p>
 			<?php endif; ?>
 		</section>
+
+		<section class="mansa-product-section" aria-labelledby="mansa-product-related-products">
+			<h2 id="mansa-product-related-products" class="section__title"><?php echo esc_html( class_exists( 'Mansa\\Admin\\Settings' ) ? \Mansa\Admin\Settings::get_setting( 'mansa_product_related_products_title', __( 'Related Products', 'generatepress-mansa-child' ) ) : __( 'Related Products', 'generatepress-mansa-child' ) ); ?></h2>
+			<?php
+			$related_products_args = array(
+				'post_type'      => 'mansa_product',
+				'posts_per_page' => 6,
+				'post_status'    => 'publish',
+				'post__not_in'   => array( $product_id ),
+			);
+			if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
+				$related_products_args['tax_query'] = array(
+					array(
+						'taxonomy' => 'mansa_product_category',
+						'field'    => 'term_id',
+						'terms'    => wp_list_pluck( $categories, 'term_id' ),
+					),
+				);
+			}
+			$related_products_query = new WP_Query( $related_products_args );
+			if ( $related_products_query->have_posts() ) :
+				gp_mansa_child_render_slick( $related_products_query, 'product' );
+			else :
+				wp_reset_postdata();
+				?>
+				<p class="mansa-product-empty"><?php esc_html_e( 'No related products found yet.', 'generatepress-mansa-child' ); ?></p>
+			<?php endif; ?>
+		</section>
+
+		<?php mansa_render_ad_placement( 2 ); ?>
 	</main>
 
 <?php

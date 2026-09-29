@@ -12,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Load helpers.
 require_once __DIR__ . '/inc/filters.php';
 require_once __DIR__ . '/inc/queries.php';
+require_once __DIR__ . '/inc/like-share.php';
+require_once __DIR__ . '/inc/ad-placements.php';
 
 /**
  * Enqueue theme styles.
@@ -50,7 +52,33 @@ function gp_mansa_child_enqueue_assets() {
 			wp_get_theme()->get( 'Version' ),
 			true
 		);
+
+		wp_enqueue_script(
+			'generatepress-mansa-child-like-share',
+			get_stylesheet_directory_uri() . '/assets/js/like-share.js',
+			array(),
+			wp_get_theme()->get( 'Version' ),
+			true
+		);
+
+		wp_localize_script(
+			'generatepress-mansa-child-like-share',
+			'mansa_like_share',
+			array(
+				'ajax_url'    => admin_url( 'admin-ajax.php' ),
+				'nonce'       => wp_create_nonce( 'mansa_like_nonce' ),
+				'copied_text' => __( 'Link copied to clipboard!', 'generatepress-mansa-child' ),
+			)
+		);
 	}
+
+	wp_enqueue_script(
+		'generatepress-mansa-child-sticky-header',
+		get_stylesheet_directory_uri() . '/assets/js/sticky-header.js',
+		array(),
+		wp_get_theme()->get( 'Version' ),
+		true
+	);
 }
 add_action( 'wp_enqueue_scripts', 'gp_mansa_child_enqueue_assets' );
 
@@ -311,6 +339,90 @@ function gp_mansa_child_save_product_meta( $post_id ) {
 add_action( 'save_post', 'gp_mansa_child_save_product_meta' );
 
 /**
+ * Register meta box for brand testimonials.
+ */
+function gp_mansa_child_register_brand_testimonials_meta_box() {
+	add_meta_box(
+		'mansa-brand-testimonials-box',
+		__( 'Testimonials Gallery (What People Are Saying)', 'generatepress-mansa-child' ),
+		'gp_mansa_child_render_brand_testimonials_meta_box',
+		'mansa_brand',
+		'normal',
+		'default'
+	);
+}
+add_action( 'add_meta_boxes', 'gp_mansa_child_register_brand_testimonials_meta_box' );
+
+/**
+ * Render brand testimonials meta box.
+ *
+ * @param \WP_Post $post Post object.
+ */
+function gp_mansa_child_render_brand_testimonials_meta_box( $post ) {
+	wp_nonce_field( 'gp_mansa_child_save_brand_testimonials', 'gp_mansa_child_brand_testimonials_nonce' );
+
+	$testimonials = get_post_meta( $post->ID, '_mansa_brand_testimonials', true );
+	$testimonials = is_string( $testimonials ) ? $testimonials : '';
+	?>
+	<div class="mansa-meta-grid">
+		<h4><?php esc_html_e( 'Testimonials Gallery (What People Are Saying)', 'generatepress-mansa-child' ); ?></h4>
+		<p><?php esc_html_e( 'Upload and manage testimonial images or screenshots to display in the "What People Are Saying" slider on this brand page.', 'generatepress-mansa-child' ); ?></p>
+		<div class="mansa-meta-row">
+			<button type="button" class="button" id="mansa-product-testimonials-button"><?php esc_html_e( 'Select Testimonial Images', 'generatepress-mansa-child' ); ?></button>
+			<input type="hidden" id="mansa-product-testimonials" name="mansa_brand_testimonials" value="<?php echo esc_attr( $testimonials ); ?>" />
+		</div>
+		<div id="mansa-product-testimonials-preview" class="mansa-meta-gallery">
+			<?php
+			if ( $testimonials ) {
+				$t_ids = array_filter( array_map( 'absint', explode( ',', $testimonials ) ) );
+				foreach ( $t_ids as $t_id ) {
+					$t_src = wp_get_attachment_image_url( $t_id, 'thumbnail' );
+					if ( $t_src ) {
+						printf(
+							'<div class="mansa-meta-gallery__item" data-id="%1$d"><img src="%2$s" data-id="%1$d" /><button type="button" class="mansa-meta-gallery__remove" title="%3$s">&times;</button></div>',
+							esc_attr( $t_id ),
+							esc_url( $t_src ),
+							esc_attr__( 'Remove image', 'generatepress-mansa-child' )
+						);
+					}
+				}
+			}
+			?>
+		</div>
+	</div>
+	<?php
+}
+
+/**
+ * Save brand testimonials meta box data.
+ *
+ * @param int $post_id Post ID.
+ */
+function gp_mansa_child_save_brand_testimonials( $post_id ) {
+	if ( ! isset( $_POST['gp_mansa_child_brand_testimonials_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['gp_mansa_child_brand_testimonials_nonce'] ), 'gp_mansa_child_save_brand_testimonials' ) ) {
+		return;
+	}
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	if ( 'mansa_brand' !== get_post_type( $post_id ) ) {
+		return;
+	}
+
+	if ( isset( $_POST['mansa_brand_testimonials'] ) ) {
+		$testimonials = sanitize_text_field( wp_unslash( $_POST['mansa_brand_testimonials'] ) );
+		update_post_meta( $post_id, '_mansa_brand_testimonials', $testimonials );
+	}
+}
+add_action( 'save_post', 'gp_mansa_child_save_brand_testimonials' );
+
+/**
  * Enqueue admin scripts for product meta box.
  */
 function gp_mansa_child_admin_scripts( $hook ) {
@@ -319,7 +431,7 @@ function gp_mansa_child_admin_scripts( $hook ) {
 	}
 
 	$screen = get_current_screen();
-	if ( ! $screen || 'mansa_product' !== $screen->post_type ) {
+	if ( ! $screen || ! in_array( $screen->post_type, array( 'mansa_product', 'mansa_brand' ), true ) ) {
 		return;
 	}
 

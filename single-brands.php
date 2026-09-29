@@ -60,13 +60,6 @@ while ( have_posts() ) :
 			</section>
 		<?php endif; ?>
 
-		<section class="mansa-brand-section" aria-labelledby="mansa-brand-about">
-			<h2 id="mansa-brand-about" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_brand_about_title', __( 'About the Brand', 'generatepress-mansa-child' ) ) ); ?></h2>
-			<div class="mansa-brand-description">
-				<?php the_content(); ?>
-			</div>
-		</section>
-
 		<?php if ( $brand_website || $brand_social ) : ?>
 			<section class="mansa-brand-section" aria-labelledby="mansa-brand-contact-info">
 				<h2 id="mansa-brand-contact-info" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_brand_contact_title', __( 'Connect With Us', 'generatepress-mansa-child' ) ) ); ?></h2>
@@ -98,13 +91,14 @@ while ( have_posts() ) :
 			</section>
 		<?php endif; ?>
 
-		<section class="mansa-brand-section" aria-labelledby="mansa-brand-products">
-			<h2 id="mansa-brand-products" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_brand_products_title', __( 'Products from this Brand', 'generatepress-mansa-child' ) ) ); ?></h2>
+		<section class="mansa-brand-section mansa-brand-products-section" aria-labelledby="mansa-brand-products">
+			<h2 id="mansa-brand-products" class="section__title"><?php printf( esc_html__( 'Explore %s Product', 'generatepress-mansa-child' ), get_the_title() ); ?></h2>
 			<?php
-			$products_query = new WP_Query(
+			$brand_products_query = new WP_Query(
 				array(
 					'post_type'      => 'mansa_product',
 					'posts_per_page' => 12,
+					'post_status'    => 'publish',
 					'meta_query'     => array(
 						array(
 							'key'   => '_mansa_brand_id',
@@ -114,42 +108,154 @@ while ( have_posts() ) :
 				)
 			);
 
-			if ( $products_query->have_posts() ) :
-				gp_mansa_child_render_slick( $products_query, 'product' );
-			else :
+			// Fallback: If no products mapped directly to this brand yet, load published products so carousel displays
+			if ( ! $brand_products_query->have_posts() ) {
+				$brand_products_query = new WP_Query(
+					array(
+						'post_type'      => 'mansa_product',
+						'posts_per_page' => 6,
+						'post_status'    => 'publish',
+					)
+				);
+			}
+
+			if ( $brand_products_query->have_posts() ) :
+				?>
+				<div class="mansa-slick mansa-brand-products-slider">
+					<?php
+					while ( $brand_products_query->have_posts() ) :
+						$brand_products_query->the_post();
+						?>
+						<div class="mansa-slick__slide">
+							<a class="mansa-brand-product-image-card" href="<?php the_permalink(); ?>" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr( get_the_title() ); ?>">
+								<div class="mansa-brand-product-thumb">
+									<?php
+									if ( has_post_thumbnail() ) {
+										the_post_thumbnail( 'large', array( 'loading' => 'lazy', 'alt' => esc_attr( get_the_title() ) ) );
+									} else {
+										echo '<div class="mansa-placeholder-thumb"><span>' . esc_html( get_the_title() ) . '</span></div>';
+									}
+									?>
+								</div>
+								<div class="mansa-brand-product-info">
+									<h3 class="mansa-brand-product-title"><?php the_title(); ?></h3>
+									<span class="mansa-brand-product-cta"><?php esc_html_e( 'View Product', 'generatepress-mansa-child' ); ?> &rarr;</span>
+								</div>
+							</a>
+						</div>
+					<?php endwhile; ?>
+				</div>
+				<?php
 				wp_reset_postdata();
+			else :
 				?>
 				<p class="mansa-brand-empty"><?php esc_html_e( 'No products found for this brand yet.', 'generatepress-mansa-child' ); ?></p>
 			<?php endif; ?>
 		</section>
 
-		<section class="mansa-brand-section" aria-labelledby="mansa-brand-related-brands">
-			<h2 id="mansa-brand-related-brands" class="section__title"><?php echo esc_html( class_exists( 'Mansa\\Admin\\Settings' ) ? \Mansa\Admin\Settings::get_setting( 'mansa_brand_related_brands_title', __( 'Related Brands', 'generatepress-mansa-child' ) ) : __( 'Related Brands', 'generatepress-mansa-child' ) ); ?></h2>
-			<?php
-			$brand_cats = get_the_terms( $brand_id, 'mansa_product_category' );
-			$related_brands_args = array(
-				'post_type'      => 'mansa_brand',
-				'posts_per_page' => 6,
-				'post__not_in'   => array( $brand_id ),
-				'post_status'    => 'publish',
-			);
-			if ( ! empty( $brand_cats ) && ! is_wp_error( $brand_cats ) ) {
-				$related_brands_args['tax_query'] = array(
-					array(
-						'taxonomy' => 'mansa_product_category',
-						'field'    => 'term_id',
-						'terms'    => wp_list_pluck( $brand_cats, 'term_id' ),
+		<?php
+		$testimonial_ids = array_filter( array_map( 'absint', explode( ',', get_post_meta( $brand_id, '_mansa_brand_testimonials', true ) ) ) );
+
+		// Fallback 1: If no testimonials directly uploaded to brand, pull from the brand's products
+		if ( empty( $testimonial_ids ) ) {
+			$brand_products_for_t = get_posts(
+				array(
+					'post_type'      => 'mansa_product',
+					'posts_per_page' => 10,
+					'meta_query'     => array(
+						array(
+							'key'   => '_mansa_brand_id',
+							'value' => $brand_id,
+						),
 					),
+					'fields'         => 'ids',
+				)
+			);
+			foreach ( $brand_products_for_t as $bp_id ) {
+				$prod_t = get_post_meta( $bp_id, '_mansa_product_testimonials', true );
+				if ( ! empty( $prod_t ) ) {
+					$prod_t_ids      = array_filter( array_map( 'absint', explode( ',', $prod_t ) ) );
+					$testimonial_ids = array_merge( $testimonial_ids, $prod_t_ids );
+				}
+			}
+			$testimonial_ids = array_unique( $testimonial_ids );
+		}
+
+		// Fallback 2: If still empty, pull from any product testimonials in the site
+		if ( empty( $testimonial_ids ) ) {
+			$any_prods = get_posts(
+				array(
+					'post_type'      => 'mansa_product',
+					'posts_per_page' => 5,
+					'meta_query'     => array(
+						array(
+							'key'     => '_mansa_product_testimonials',
+							'compare' => 'EXISTS',
+						),
+					),
+					'fields'         => 'ids',
+				)
+			);
+			foreach ( $any_prods as $ap_id ) {
+				$prod_t = get_post_meta( $ap_id, '_mansa_product_testimonials', true );
+				if ( ! empty( $prod_t ) ) {
+					$prod_t_ids      = array_filter( array_map( 'absint', explode( ',', $prod_t ) ) );
+					$testimonial_ids = array_merge( $testimonial_ids, $prod_t_ids );
+				}
+			}
+			$testimonial_ids = array_unique( $testimonial_ids );
+		}
+
+		$testimonial_images = array();
+		foreach ( $testimonial_ids as $attachment_id ) {
+			$src = wp_get_attachment_image_url( $attachment_id, 'large' );
+			if ( $src ) {
+				$testimonial_images[] = array(
+					'url' => $src,
+					'alt' => get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) ?: get_the_title( $brand_id ),
 				);
 			}
-			$related_brands_query = new WP_Query( $related_brands_args );
-			if ( $related_brands_query->have_posts() ) :
-				gp_mansa_child_render_slick( $related_brands_query, 'brand' );
-			else :
-				wp_reset_postdata();
-				?>
-				<p class="mansa-brand-empty"><?php esc_html_e( 'No related brands yet.', 'generatepress-mansa-child' ); ?></p>
-			<?php endif; ?>
+		}
+		?>
+
+		<section class="mansa-brand-section mansa-product-testimonials-section" aria-labelledby="mansa-brand-testimonials">
+			<h2 id="mansa-brand-testimonials" class="section__title"><?php echo esc_html( class_exists( 'Mansa\\Admin\\Settings' ) ? \Mansa\Admin\Settings::get_setting( 'mansa_product_testimonials_title', __( 'What People Are Saying', 'generatepress-mansa-child' ) ) : __( 'What People Are Saying', 'generatepress-mansa-child' ) ); ?></h2>
+			<div class="mansa-product-testimonials-slider-wrap">
+				<?php if ( count( $testimonial_images ) > 1 ) : ?>
+					<div class="mansa-product-testimonials-slider">
+						<?php foreach ( $testimonial_images as $image ) : ?>
+							<div class="mansa-product-testimonial__slide">
+								<div class="mansa-product-testimonial__card">
+									<img src="<?php echo esc_url( $image['url'] ); ?>" alt="<?php echo esc_attr( $image['alt'] ); ?>" loading="lazy" />
+								</div>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php elseif ( count( $testimonial_images ) === 1 ) : ?>
+					<div class="mansa-product-testimonial__single">
+						<div class="mansa-product-testimonial__card">
+							<img src="<?php echo esc_url( $testimonial_images[0]['url'] ); ?>" alt="<?php echo esc_attr( $testimonial_images[0]['alt'] ); ?>" loading="lazy" />
+						</div>
+					</div>
+				<?php else : ?>
+					<div class="mansa-product-testimonial__single">
+						<div class="mansa-product-testimonial__card mansa-product-testimonial__card--placeholder">
+							<p style="padding: 2rem; color: #888; text-align: center;"><?php esc_html_e( 'Testimonials coming soon.', 'generatepress-mansa-child' ); ?></p>
+						</div>
+					</div>
+				<?php endif; ?>
+			</div>
+		</section>
+
+		<?php get_template_part( 'template-parts/product-support-box' ); ?>
+
+		<?php mansa_render_ad_placement( 1 ); ?>
+		<!-- Content moved here -->
+		<section class="mansa-brand-section" aria-labelledby="mansa-brand-about">
+			<h2 id="mansa-brand-about" class="section__title"><?php echo esc_html( \Mansa\Admin\Settings::get_setting( 'mansa_brand_about_title', __( 'About the Brand', 'generatepress-mansa-child' ) ) ); ?></h2>
+			<div class="mansa-brand-description">
+				<?php the_content(); ?>
+			</div>
 		</section>
 
 		<section class="mansa-brand-section" aria-labelledby="mansa-brand-related-articles">
@@ -171,6 +277,8 @@ while ( have_posts() ) :
 				<p class="mansa-brand-empty"><?php esc_html_e( 'No related articles yet.', 'generatepress-mansa-child' ); ?></p>
 			<?php endif; ?>
 		</section>
+
+		<?php mansa_render_ad_placement( 2 ); ?>
 	</main>
 
 	<?php
